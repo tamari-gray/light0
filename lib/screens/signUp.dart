@@ -48,7 +48,7 @@ class _LoginAnonState extends State<LoginAnon> {
                 onPressed: () async {
                   if (_formKey.currentState.validate()) {
                     dynamic result = await _auth.signInAnon(userName);
-                    print("signed in ${result.username}");
+                    // print("signed in $result");
                   }
                 },
                 child: Text('Join'),

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:light0/screens/signUp.dart';
+import 'package:light0/screens/lobby.dart';
 import 'package:light0/services/auth.dart';
+import 'package:light0/services/db.dart';
 import 'package:light0/models/user.dart';
+import 'package:light0/models/userData.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -33,19 +36,13 @@ class Wrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
 
-    return _user == null
-        ? LoginAnon()
-        : Scaffold(
-            body: Container(
-              child: Center(
-                child: RaisedButton(
-                  child: Text("sign out"),
-                  onPressed: () async {
-                    await _auth.logout(_user.userId);
-                  },
-                ),
-              ),
-            ),
-          );
+    if (_user == null) {
+      return LoginAnon();
+    } else {
+      return FutureProvider<UserData>(
+        create: (_) => DbService(userId: _user.userId).userData,
+        child: Lobby(),
+      );
+    }
   }
 }
