@@ -17,7 +17,7 @@ class _LoginAnonState extends State<LoginAnon> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text("LIGHT0"),
+              Text("LIGHT0 boi"),
               Padding(
                 padding: const EdgeInsets.fromLTRB(40, 0, 40, 40),
                 child: Center(
