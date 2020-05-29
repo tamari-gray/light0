@@ -23,7 +23,7 @@ class AuthService {
       FirebaseUser user = result.user;
 
       print("got user ${user.uid}");
-      DbService(userId: user.uid).updateUserData(username);
+      await DbService(userId: user.uid).updateUserData(username);
 
       return _userFromFirebaseUser(user);
     } catch (e) {
