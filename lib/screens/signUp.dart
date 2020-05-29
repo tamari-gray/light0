@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:light0/services/auth.dart';
 
 class LoginAnon extends StatefulWidget {
   @override
@@ -7,6 +8,7 @@ class LoginAnon extends StatefulWidget {
 
 class _LoginAnonState extends State<LoginAnon> {
   final _formKey = GlobalKey<FormState>();
+  final AuthService _auth = AuthService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,12 +39,15 @@ class _LoginAnonState extends State<LoginAnon> {
                 ),
               ),
               RaisedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState.validate()) {
                     // SAVE TO FIREBASE
 
-                    Scaffold.of(context).showSnackBar(
-                        SnackBar(content: Text('Processing Data')));
+                    dynamic result = await _auth.signInAnon();
+
+                    print("signed in ${result.uid}");
+
+                    // Scaffold.of(context).showSnackBar(r
                   }
                 },
                 child: Text('Join'),
