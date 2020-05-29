@@ -41,7 +41,7 @@ class Wrapper extends StatelessWidget {
                 child: RaisedButton(
                   child: Text("sign out"),
                   onPressed: () async {
-                    await _auth.logout();
+                    await _auth.logout(_user.userId);
                   },
                 ),
               ),

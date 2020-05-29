@@ -9,6 +9,8 @@ class LoginAnon extends StatefulWidget {
 class _LoginAnonState extends State<LoginAnon> {
   final _formKey = GlobalKey<FormState>();
   final AuthService _auth = AuthService();
+
+  String userName = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +27,11 @@ class _LoginAnonState extends State<LoginAnon> {
                 child: Center(
                   child: TextFormField(
                     decoration: InputDecoration(labelText: 'Enter username'),
-                    // The validator receives the text that the user has entered.
+                    onChanged: (val) {
+                      setState(() {
+                        userName = val;
+                      });
+                    },
 
                     // validation : check if username has been taken?? ////////////////////////////////////
 
@@ -41,13 +47,8 @@ class _LoginAnonState extends State<LoginAnon> {
               RaisedButton(
                 onPressed: () async {
                   if (_formKey.currentState.validate()) {
-                    // SAVE TO FIREBASE
-
-                    dynamic result = await _auth.signInAnon();
-
-                    print("signed in ${result.uid}");
-
-                    // Scaffold.of(context).showSnackBar(r
+                    dynamic result = await _auth.signInAnon(userName);
+                    print("signed in ${result.username}");
                   }
                 },
                 child: Text('Join'),

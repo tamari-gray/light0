@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:light0/models/user.dart';
+import 'package:light0/services/db.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -13,13 +14,17 @@ class AuthService {
 
   // get user object from firebaseAuth user
   User _userFromFirebaseUser(FirebaseUser user) {
-    return user != null ? User(uid: user.uid) : null;
+    return user != null ? User(userId: user.uid) : null;
   }
 
-  Future signInAnon() async {
+  Future signInAnon(String username) async {
     try {
       AuthResult result = await _auth.signInAnonymously();
       FirebaseUser user = result.user;
+
+      print("got user ${user.uid}");
+      DbService(userId: user.uid).updateUserData(username);
+
       return _userFromFirebaseUser(user);
     } catch (e) {
       String errorMsg = e.toString();
@@ -28,7 +33,8 @@ class AuthService {
     }
   }
 
-  Future logout() async {
+  Future logout(userId) async {
+    await DbService(userId: userId).deleteAccount();
     return await _auth.signOut();
   }
 }
