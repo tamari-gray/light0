@@ -35,11 +35,28 @@ class DbService {
         .map(_userDataFromSnapshot);
   }
 
+  List<String> _playerDataFromSnapshot(QuerySnapshot snapshot) {
+    print("getting ${snapshot.documents.length} players");
+
+    return snapshot.documents.map((doc) {
+      print(doc.data["username"]);
+      return doc.data["username"].toString() ?? "";
+    }).toList();
+  }
+
+  Stream<List<String>> get playerData {
+    return gameRef.collection("users").snapshots().map(_playerDataFromSnapshot);
+  }
+
   makeAdmin() async {
     // print("des es de admin");
     return await gameRef
         .collection("users")
         .document(userId)
         .updateData({"admin": true});
+  }
+
+  startGame() async {
+    return await gameRef.updateData({"gameInitialising": true});
   }
 }

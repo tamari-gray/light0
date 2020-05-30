@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:light0/services/auth.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/models/userData.dart';
+import 'package:light0/services/db.dart';
 import 'package:provider/provider.dart';
 
 class Lobby extends StatefulWidget {
@@ -93,7 +94,7 @@ class _LobbyState extends State<Lobby> {
                         onPressed: () {
                           tagger == ""
                               ? Scaffold.of(context).showSnackBar(_snackBar)
-                              : _showMyDialog();
+                              : _showMyDialog(_user.userId);
                         },
                         child: Text("start game"),
                       ),
@@ -114,20 +115,20 @@ class _LobbyState extends State<Lobby> {
     );
   }
 
-  Future<void> _showMyDialog() async {
+  Future<void> _showMyDialog(String userId) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('AlertDialog Title'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Are you ready?'),
-              ],
-            ),
-          ),
+          title: Text('Are you ready?'),
+          // content: SingleChildScrollView(
+          //   child: ListBody(
+          //     children: <Widget>[
+          //       Text('Are you ready?'),
+          //     ],
+          //   ),
+          // ),
           actions: <Widget>[
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -136,7 +137,8 @@ class _LobbyState extends State<Lobby> {
                     padding: const EdgeInsets.fromLTRB(0, 0, 100, 0),
                     child: RaisedButton(
                       child: Text("Start game"),
-                      onPressed: () {
+                      onPressed: () async {
+                        await DbService(userId: userId).startGame();
                         Navigator.pop(context);
                       },
                     ),
