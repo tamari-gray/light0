@@ -13,12 +13,14 @@ class _LobbyState extends State<Lobby> {
   final AuthService _auth = AuthService();
   Color color;
   String tagger;
+  bool _selectedTagger;
 
   @override
   void initState() {
     super.initState();
     color = Colors.transparent;
     tagger = "";
+    _selectedTagger = false;
   }
 
   @override
@@ -45,30 +47,41 @@ class _LobbyState extends State<Lobby> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            _userData.isAdmin == true
-                ? Expanded(
-                    child: ListView.builder(
-                      itemCount: _users.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          color: color,
-                          child: ListTile(
-                            title: Text(_users[index]),
-                            // selected: _users[index],
-                            onTap: () {
-                              setState(() {
-                                if (color == Colors.transparent) {
-                                  color = Colors.blueAccent;
-                                  tagger = _users[index];
-                                } else {
-                                  color = Colors.transparent;
-                                  tagger = "";
-                                }
-                              });
-                            },
-                          ),
-                        );
+            Expanded(
+              child: ListView.builder(
+                itemCount: _users.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    color: color,
+                    child: ListTile(
+                      title: tagger == _users[index]
+                          ? Text("${_users[index]} is the tagger")
+                          : Text("${_users[index]} has joined"),
+                      trailing: tagger == _users[index]
+                          ? Icon(Icons.check_box)
+                          : Icon(Icons.check_box_outline_blank),
+                      selected: tagger == _users[index],
+                      onTap: () {
+                        setState(() {
+                          if (_userData.isAdmin == true) {
+                            tagger = _users[index];
+                            _selectedTagger = true;
+                          }
+                        });
                       },
+                    ),
+                  );
+                },
+              ),
+            ),
+            _userData.isAdmin == true
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
+                    child: RaisedButton(
+                      onPressed: () {
+                        //start game
+                      },
+                      child: Text("start game"),
                     ),
                   )
                 : Center(
