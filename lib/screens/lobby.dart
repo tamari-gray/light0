@@ -3,6 +3,7 @@ import 'package:light0/services/auth.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/services/db.dart';
+import 'package:light0/screens/playingGame.dart';
 import 'package:provider/provider.dart';
 
 class Lobby extends StatefulWidget {
@@ -27,10 +28,10 @@ class _LobbyState extends State<Lobby> {
     final _user = Provider.of<User>(context);
     final _userData = Provider.of<UserData>(context) != null
         ? Provider.of<UserData>(context)
-        : UserData();
-    final _users = ["pete", "steve"];
-
-    final _username = _userData != null ? _userData.username : "";
+        : UserData(username: "");
+    final _players = Provider.of<List<String>>(context) != null
+        ? Provider.of<List<String>>(context)
+        : [""];
 
     final _snackBar = SnackBar(
       content: Text('choose a tagger'),
@@ -38,7 +39,7 @@ class _LobbyState extends State<Lobby> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Welcome $_username"),
+        title: Text("Welcome ${_userData.username}"),
         actions: <Widget>[
           FlatButton.icon(
             label: Text("leave game"),
@@ -57,27 +58,27 @@ class _LobbyState extends State<Lobby> {
             children: <Widget>[
               Expanded(
                 child: ListView.builder(
-                  itemCount: _users.length,
+                  itemCount: _players.length,
                   itemBuilder: (context, index) {
                     return Container(
                       color: color,
                       child: ListTile(
-                        title: tagger == _users[index]
-                            ? Text("${_users[index]} is the tagger")
-                            : Text("${_users[index]} has joined"),
+                        title: tagger == _players[index]
+                            ? Text("${_players[index]} is the tagger")
+                            : Text("${_players[index]} has joined"),
                         trailing: _userData?.isAdmin == true
-                            ? tagger == _users[index]
+                            ? tagger == _players[index]
                                 ? Icon(Icons.check_box)
                                 : Icon(Icons.check_box_outline_blank)
                             : null,
-                        selected: tagger == _users[index],
+                        selected: tagger == _players[index],
                         onTap: () {
                           setState(() {
                             if (_userData.isAdmin == true) {
-                              if (tagger == _users[index]) {
+                              if (tagger == _players[index]) {
                                 tagger = "";
                               } else {
-                                tagger = _users[index];
+                                tagger = _players[index];
                               }
                             }
                           });
@@ -138,8 +139,13 @@ class _LobbyState extends State<Lobby> {
                     child: RaisedButton(
                       child: Text("Start game"),
                       onPressed: () async {
-                        await DbService(userId: userId).startGame();
-                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlayingGame(),
+                          ),
+                        );
+                        await DbService(userId: userId).initialiseGame();
                       },
                     ),
                   ),

@@ -40,8 +40,15 @@ class Wrapper extends StatelessWidget {
         child: LoginAnon(),
       );
     } else {
-      return StreamProvider<UserData>(
-        create: (_) => DbService(userId: _user.userId).userData,
+      return MultiProvider(
+        providers: [
+          StreamProvider<UserData>(
+            create: (_) => DbService(userId: _user.userId).userData,
+          ),
+          StreamProvider<List<String>>(
+            create: (_) => DbService().playerData,
+          ),
+        ],
         child: Lobby(),
       );
     }
