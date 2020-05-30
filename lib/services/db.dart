@@ -22,9 +22,12 @@ class DbService {
 
   Future<UserData> get userData async {
     return await gameRef.collection("users").document(userId).get().then((doc) {
-      print(doc.data["username"]);
+      print(doc.data["admin"]);
       return doc.exists
-          ? UserData(username: doc.data["username"].toString())
+          ? UserData(
+              username: doc.data["username"].toString(),
+              isAdmin: doc.data["admin"],
+            )
           : "null";
     });
   }
