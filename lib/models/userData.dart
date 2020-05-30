@@ -1,4 +1,5 @@
 class UserData {
   final String username;
-  UserData({this.username});
+  final bool isAdmin;
+  UserData({this.username, this.isAdmin});
 }

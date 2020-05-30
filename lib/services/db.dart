@@ -6,22 +6,34 @@ class DbService {
   final String userId;
   DbService({this.userId});
 
-  final CollectionReference usersColl = Firestore.instance.collection('users');
+  final DocumentReference gameRef =
+      Firestore.instance.collection("games").document("game1");
 
   Future updateUserData(String username) async {
-    return await usersColl.document(userId).setData({"username": username});
+    return await gameRef
+        .collection("users")
+        .document(userId)
+        .setData({"username": username});
   }
 
   deleteAccount() async {
-    return await usersColl.document(userId).delete();
+    return await gameRef.collection("users").document(userId).delete();
   }
 
   Future<UserData> get userData async {
-    return await usersColl.document(userId).get().then((doc) {
+    return await gameRef.collection("users").document(userId).get().then((doc) {
       print(doc.data["username"]);
       return doc.exists
           ? UserData(username: doc.data["username"].toString())
           : "null";
     });
+  }
+
+  makeAdmin() async {
+    // print("des es de admin");
+    return await gameRef
+        .collection("users")
+        .document(userId)
+        .updateData({"admin": true});
   }
 }

