@@ -31,8 +31,6 @@ class _LobbyState extends State<Lobby> {
 
     final _username = _userData != null ? _userData.username : "";
 
-    // print(_userData.isAdmin);
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Welcome $_username"),
@@ -70,7 +68,11 @@ class _LobbyState extends State<Lobby> {
                       onTap: () {
                         setState(() {
                           if (_userData.isAdmin == true) {
-                            tagger = _users[index];
+                            if (tagger == _users[index]) {
+                              tagger = "";
+                            } else {
+                              tagger = _users[index];
+                            }
                           }
                         });
                       },
