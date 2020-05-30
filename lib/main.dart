@@ -30,14 +30,15 @@ class MyApp extends StatelessWidget {
 }
 
 class Wrapper extends StatelessWidget {
-  final AuthService _auth = AuthService();
-
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
 
     if (_user == null) {
-      return LoginAnon();
+      return StreamProvider<List<String>>(
+        create: (_) => DbService().playerData,
+        child: LoginAnon(),
+      );
     } else {
       return StreamProvider<UserData>(
         create: (_) => DbService(userId: _user.userId).userData,
