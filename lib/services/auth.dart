@@ -25,8 +25,10 @@ class AuthService {
       print("got user ${user.uid}");
       await DbService(userId: user.uid).updateUserData(username);
 
+      print("making $username admin");
+
       username == "tam_is_cool"
-          ? DbService(userId: user.uid).makeAdmin()
+          ? await DbService(userId: user.uid).makeAdmin()
           : null;
 
       return _userFromFirebaseUser(user);

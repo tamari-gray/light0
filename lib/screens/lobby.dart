@@ -13,25 +13,29 @@ class _LobbyState extends State<Lobby> {
   final AuthService _auth = AuthService();
   Color color;
   String tagger;
-  bool _selectedTagger;
 
   @override
   void initState() {
     super.initState();
     color = Colors.transparent;
     tagger = "";
-    _selectedTagger = false;
   }
 
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
-    final _userData = Provider.of<UserData>(context);
+    final _userData = Provider.of<UserData>(context) != null
+        ? Provider.of<UserData>(context)
+        : UserData();
     final _users = ["pete", "steve"];
+
+    final _username = _userData != null ? _userData.username : "";
+
+    // print(_userData.isAdmin);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Welcome ${_userData.username}"),
+        title: Text("Welcome $_username"),
         actions: <Widget>[
           FlatButton.icon(
             label: Text("leave game"),
@@ -57,15 +61,16 @@ class _LobbyState extends State<Lobby> {
                       title: tagger == _users[index]
                           ? Text("${_users[index]} is the tagger")
                           : Text("${_users[index]} has joined"),
-                      trailing: tagger == _users[index]
-                          ? Icon(Icons.check_box)
-                          : Icon(Icons.check_box_outline_blank),
+                      trailing: _userData?.isAdmin == true
+                          ? tagger == _users[index]
+                              ? Icon(Icons.check_box)
+                              : Icon(Icons.check_box_outline_blank)
+                          : null,
                       selected: tagger == _users[index],
                       onTap: () {
                         setState(() {
                           if (_userData.isAdmin == true) {
                             tagger = _users[index];
-                            _selectedTagger = true;
                           }
                         });
                       },
@@ -87,7 +92,10 @@ class _LobbyState extends State<Lobby> {
                 : Center(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
-                      child: Text("Waitng for more players to join.."),
+                      child: Text(
+                        "Waitng for more players to join..",
+                        style: TextStyle(fontSize: 22),
+                      ),
                     ),
                   ),
           ],
