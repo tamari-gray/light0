@@ -20,16 +20,19 @@ class DbService {
     return await gameRef.collection("users").document(userId).delete();
   }
 
-  Future<UserData> get userData async {
-    return await gameRef.collection("users").document(userId).get().then((doc) {
-      print(doc.data["admin"]);
-      return doc.exists
-          ? UserData(
-              username: doc.data["username"].toString(),
-              isAdmin: doc.data["admin"],
-            )
-          : "null";
-    });
+  UserData _userDataFromSnapshot(DocumentSnapshot snapshot) {
+    print(
+        "got user data: ${snapshot.data['username']}, isAdmin = ${snapshot.data['admin']}");
+    return UserData(
+        username: snapshot.data['name'], isAdmin: snapshot.data["admin"]);
+  }
+
+  Stream<UserData> get userData {
+    return gameRef
+        .collection("users")
+        .document(userId)
+        .snapshots()
+        .map(_userDataFromSnapshot);
   }
 
   makeAdmin() async {

@@ -39,7 +39,7 @@ class Wrapper extends StatelessWidget {
     if (_user == null) {
       return LoginAnon();
     } else {
-      return FutureProvider<UserData>(
+      return StreamProvider<UserData>(
         create: (_) => DbService(userId: _user.userId).userData,
         child: Lobby(),
       );
