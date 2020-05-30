@@ -17,7 +17,10 @@ class Lobby extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            _userData != null ? Text(_userData.username) : Container(),
+            _userData != null
+                ? Text(
+                    "welcome ${_userData.username}, waitng for more players to join")
+                : Container(),
             RaisedButton(
               child: Text("sign out"),
               onPressed: () async {
