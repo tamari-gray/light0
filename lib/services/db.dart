@@ -56,7 +56,7 @@ class DbService {
         .updateData({"admin": true});
   }
 
-  startGame() async {
+  initialiseGame() async {
     return await gameRef.updateData({"gameInitialising": true});
   }
 }
