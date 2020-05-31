@@ -14,13 +14,13 @@ class Lobby extends StatefulWidget {
 class _LobbyState extends State<Lobby> {
   final AuthService _auth = AuthService();
   Color color;
-  String tagger;
+  UserData tagger;
 
   @override
   void initState() {
     super.initState();
     color = Colors.transparent;
-    tagger = "";
+    tagger = UserData(username: "tagger", userId: "taggerId");
   }
 
   @override
@@ -28,10 +28,10 @@ class _LobbyState extends State<Lobby> {
     final _user = Provider.of<User>(context);
     final _userData = Provider.of<UserData>(context) != null
         ? Provider.of<UserData>(context)
-        : UserData(username: "");
-    final _players = Provider.of<List<String>>(context) != null
-        ? Provider.of<List<String>>(context)
-        : [""];
+        : UserData(username: "", userId: "");
+    final _players = Provider.of<List<UserData>>(context) != null
+        ? Provider.of<List<UserData>>(context)
+        : [UserData(username: "", userId: "")];
 
     final _snackBar = SnackBar(
       content: Text('choose a tagger'),
@@ -64,8 +64,8 @@ class _LobbyState extends State<Lobby> {
                       color: color,
                       child: ListTile(
                         title: tagger == _players[index]
-                            ? Text("${_players[index]} is the tagger")
-                            : Text("${_players[index]} has joined"),
+                            ? Text("${_players[index].username} is the tagger")
+                            : Text("${_players[index].username} has joined"),
                         trailing: _userData?.isAdmin == true
                             ? tagger == _players[index]
                                 ? Icon(Icons.check_box)
@@ -76,7 +76,8 @@ class _LobbyState extends State<Lobby> {
                           setState(() {
                             if (_userData.isAdmin == true) {
                               if (tagger == _players[index]) {
-                                tagger = "";
+                                tagger = UserData(
+                                    username: "tagger", userId: "taggerId");
                               } else {
                                 tagger = _players[index];
                               }
@@ -93,7 +94,9 @@ class _LobbyState extends State<Lobby> {
                       padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
                       child: RaisedButton(
                         onPressed: () {
-                          tagger == ""
+                          tagger ==
+                                  UserData(
+                                      username: "tagger", userId: "taggerId")
                               ? Scaffold.of(context).showSnackBar(_snackBar)
                               : _showMyDialog(_user.userId);
                         },
@@ -123,13 +126,6 @@ class _LobbyState extends State<Lobby> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Are you ready?'),
-          // content: SingleChildScrollView(
-          //   child: ListBody(
-          //     children: <Widget>[
-          //       Text('Are you ready?'),
-          //     ],
-          //   ),
-          // ),
           actions: <Widget>[
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -146,6 +142,7 @@ class _LobbyState extends State<Lobby> {
                           ),
                         );
                         await DbService(userId: userId).initialiseGame();
+                        await DbService(userId: userId).setTagger(tagger);
                       },
                     ),
                   ),

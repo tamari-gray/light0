@@ -35,7 +35,7 @@ class Wrapper extends StatelessWidget {
     final _user = Provider.of<User>(context);
 
     if (_user == null) {
-      return StreamProvider<List<String>>(
+      return StreamProvider<List<UserData>>(
         create: (_) => DbService().playerData,
         child: LoginAnon(),
       );
@@ -45,7 +45,7 @@ class Wrapper extends StatelessWidget {
           StreamProvider<UserData>(
             create: (_) => DbService(userId: _user.userId).userData,
           ),
-          StreamProvider<List<String>>(
+          StreamProvider<List<UserData>>(
             create: (_) => DbService().playerData,
           ),
         ],

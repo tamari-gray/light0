@@ -35,16 +35,18 @@ class DbService {
         .map(_userDataFromSnapshot);
   }
 
-  List<String> _playerDataFromSnapshot(QuerySnapshot snapshot) {
+  List<UserData> _playerDataFromSnapshot(QuerySnapshot snapshot) {
     print("getting ${snapshot.documents.length} players");
 
     return snapshot.documents.map((doc) {
       print(doc.data["username"]);
-      return doc.data["username"].toString() ?? "";
+      return UserData(
+          username: doc.data["username"].toString() ?? "",
+          userId: doc.documentID);
     }).toList();
   }
 
-  Stream<List<String>> get playerData {
+  Stream<List<UserData>> get playerData {
     return gameRef.collection("users").snapshots().map(_playerDataFromSnapshot);
   }
 
@@ -57,6 +59,13 @@ class DbService {
   }
 
   initialiseGame() async {
-    return await gameRef.updateData({"gameInitialising": true});
+    return await gameRef.setData({"gameState": "initialising"});
+  }
+
+  setTagger(UserData tagger) async {
+    return await gameRef
+        .collection("users")
+        .document(tagger.userId)
+        .updateData({"tagger": true});
   }
 }
