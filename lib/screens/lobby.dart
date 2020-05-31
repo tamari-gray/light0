@@ -39,7 +39,8 @@ class _LobbyState extends State<Lobby> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Welcome ${_userData.username}"),
+        title: Text("Welcome"),
+        // title: Text("Welcome ${_userData.username}"),
         actions: <Widget>[
           FlatButton.icon(
             label: Text("leave game"),
