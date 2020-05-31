@@ -6,6 +6,7 @@ import 'package:light0/screens/playingGame.dart';
 import 'package:light0/models/user.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:location/location.dart';
 
 class SetBoundary extends StatefulWidget {
   @override
@@ -95,6 +96,14 @@ class _MapState extends State<Map> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+
+    _setMapStyle();
+  }
+
+  void _setMapStyle() async {
+    String style = await DefaultAssetBundle.of(context)
+        .loadString("assets/map_style.json");
+    _mapController.setMapStyle(style);
   }
 
   void _setBoundary() {
@@ -105,7 +114,7 @@ class _MapState extends State<Map> {
         radius: 200,
         strokeWidth: 3,
         strokeColor: Color.fromRGBO(102, 51, 153, 1),
-        fillColor: Color.fromRGBO(102, 51, 153, 0.5),
+        fillColor: Color.fromRGBO(102, 51, 153, 0.3),
       ),
     );
   }
@@ -126,6 +135,7 @@ class _MapState extends State<Map> {
         zoom: 17,
       ),
       circles: _circles,
+      myLocationEnabled: true,
     );
   }
 }
