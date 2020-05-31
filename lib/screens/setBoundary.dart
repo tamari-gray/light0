@@ -91,17 +91,30 @@ class Map extends StatefulWidget {
 class _MapState extends State<Map> {
   GoogleMapController _mapController;
   Set<Marker> _markers = HashSet<Marker>();
+  Set<Circle> _circles = HashSet<Circle>();
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    setState(() {
-      _markers.add(
-        Marker(
-          markerId: MarkerId("boundary"),
-          position: LatLng(-37.867512, 144.978973),
-        ),
-      );
-    });
+  }
+
+  void _setBoundary() {
+    _circles.add(
+      Circle(
+        circleId: CircleId("0"),
+        center: LatLng(-37.867512, 144.978973),
+        radius: 200,
+        strokeWidth: 3,
+        strokeColor: Color.fromRGBO(102, 51, 153, 1),
+        fillColor: Color.fromRGBO(102, 51, 153, 0.5),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _setBoundary();
   }
 
   @override
@@ -112,7 +125,7 @@ class _MapState extends State<Map> {
         target: LatLng(-37.867512, 144.978973),
         zoom: 17,
       ),
-      markers: _markers,
+      circles: _circles,
     );
   }
 }
