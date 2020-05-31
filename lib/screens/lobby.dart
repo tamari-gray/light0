@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:light0/services/auth.dart';
 import 'package:light0/models/user.dart';
-import 'package:light0/models/userData.dart';
 import 'package:light0/services/db.dart';
-import 'package:light0/screens/playingGame.dart';
+import 'package:light0/models/userData.dart';
+import 'package:light0/screens/setBoundary.dart';
 import 'package:provider/provider.dart';
 
 class Lobby extends StatefulWidget {
@@ -40,7 +40,6 @@ class _LobbyState extends State<Lobby> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Welcome"),
-        // title: Text("Welcome ${_userData.username}"),
         actions: <Widget>[
           FlatButton.icon(
             label: Text("leave game"),
@@ -94,14 +93,21 @@ class _LobbyState extends State<Lobby> {
                   ? Padding(
                       padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
                       child: RaisedButton(
-                        onPressed: () {
-                          tagger ==
-                                  UserData(
-                                      username: "tagger", userId: "taggerId")
-                              ? Scaffold.of(context).showSnackBar(_snackBar)
-                              : _showMyDialog(_user.userId);
+                        onPressed: () async {
+                          if (tagger.userId == "taggerId") {
+                            Scaffold.of(context).showSnackBar(_snackBar);
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SetBoundary(),
+                              ),
+                            );
+
+                            await DbService().setTagger(tagger);
+                          }
                         },
-                        child: Text("start game"),
+                        child: Text("Set boundary"),
                       ),
                     )
                   : Center(
@@ -117,46 +123,6 @@ class _LobbyState extends State<Lobby> {
           ),
         ),
       ),
-    );
-  }
-
-  Future<void> _showMyDialog(String userId) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Are you ready?'),
-          actions: <Widget>[
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 100, 0),
-                    child: RaisedButton(
-                      child: Text("Start game"),
-                      onPressed: () async {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PlayingGame(),
-                          ),
-                        );
-                        await DbService(userId: userId).initialiseGame();
-                        await DbService(userId: userId).setTagger(tagger);
-                      },
-                    ),
-                  ),
-                  FlatButton(
-                    child: Text("Cancel"),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ])
-          ],
-        );
-      },
     );
   }
 }
