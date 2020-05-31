@@ -1,4 +1,7 @@
 class UserData {
   final String username;
-  UserData({this.username});
+  final String userId;
+  final bool isAdmin;
+  final bool isTagger;
+  UserData({this.username, this.isAdmin, this.userId, this.isTagger});
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:light0/models/userData.dart';
 import 'package:light0/services/auth.dart';
 
 class LoginAnon extends StatefulWidget {
@@ -13,6 +15,9 @@ class _LoginAnonState extends State<LoginAnon> {
   String userName = '';
   @override
   Widget build(BuildContext context) {
+    final _usernames = Provider.of<List<UserData>>(context) != null
+        ? Provider.of<List<UserData>>(context).map((e) => e.username).toList()
+        : [];
     return Scaffold(
       body: Container(
         child: Form(
@@ -32,12 +37,12 @@ class _LoginAnonState extends State<LoginAnon> {
                         userName = val;
                       });
                     },
-
-                    // validation : check if username has been taken?? ////////////////////////////////////
-
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'Please enter username';
+                      } else if (_usernames != null &&
+                          _usernames.contains(value)) {
+                        return 'username has been taken, please choose another one';
                       }
                       return null;
                     },

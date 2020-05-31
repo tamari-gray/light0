@@ -30,17 +30,25 @@ class MyApp extends StatelessWidget {
 }
 
 class Wrapper extends StatelessWidget {
-  final AuthService _auth = AuthService();
-
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
 
     if (_user == null) {
-      return LoginAnon();
+      return StreamProvider<List<UserData>>(
+        create: (_) => DbService().playerData,
+        child: LoginAnon(),
+      );
     } else {
-      return FutureProvider<UserData>(
-        create: (_) => DbService(userId: _user.userId).userData,
+      return MultiProvider(
+        providers: [
+          StreamProvider<UserData>(
+            create: (_) => DbService(userId: _user.userId).userData,
+          ),
+          StreamProvider<List<UserData>>(
+            create: (_) => DbService().playerData,
+          ),
+        ],
         child: Lobby(),
       );
     }
