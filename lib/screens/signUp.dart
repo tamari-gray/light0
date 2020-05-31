@@ -15,7 +15,9 @@ class _LoginAnonState extends State<LoginAnon> {
   String userName = '';
   @override
   Widget build(BuildContext context) {
-    final _usernames = Provider.of<List<String>>(context);
+    final _usernames = Provider.of<List<UserData>>(context) != null
+        ? Provider.of<List<UserData>>(context).map((e) => e.username).toList()
+        : [];
     return Scaffold(
       body: Container(
         child: Form(
