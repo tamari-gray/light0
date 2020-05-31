@@ -1,9 +1,11 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:light0/services/db.dart';
 import 'package:light0/screens/playingGame.dart';
 import 'package:light0/models/user.dart';
-import 'package:light0/models/userData.dart';
 import 'package:provider/provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class SetBoundary extends StatefulWidget {
   @override
@@ -14,31 +16,25 @@ class _SetBoundaryState extends State<SetBoundary> {
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
-    // final _userData = Provider.of<UserData>(context) != null
-    //     ? Provider.of<UserData>(context)
-    //     : UserData(username: "", userId: "");
     return Scaffold(
       appBar: AppBar(
         title: Text("Hold and drag to reposition"),
         actions: <Widget>[],
       ),
       body: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Stack(
           children: <Widget>[
-            Center(
-              child: Container(
-                child: Text("map"),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
-              child: RaisedButton(
-                onPressed: () {
-                  _showMyDialog(_user.userId);
-                },
-                child: Text("start game"),
+            Map(),
+            Container(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
+                child: RaisedButton(
+                  onPressed: () {
+                    _showMyDialog(_user.userId);
+                  },
+                  child: Text("start game"),
+                ),
               ),
             )
           ],
@@ -83,6 +79,40 @@ class _SetBoundaryState extends State<SetBoundary> {
           ],
         );
       },
+    );
+  }
+}
+
+class Map extends StatefulWidget {
+  @override
+  _MapState createState() => _MapState();
+}
+
+class _MapState extends State<Map> {
+  GoogleMapController _mapController;
+  Set<Marker> _markers = HashSet<Marker>();
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: MarkerId("boundary"),
+          position: LatLng(-37.867512, 144.978973),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GoogleMap(
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: CameraPosition(
+        target: LatLng(-37.867512, 144.978973),
+        zoom: 17,
+      ),
+      markers: _markers,
     );
   }
 }
