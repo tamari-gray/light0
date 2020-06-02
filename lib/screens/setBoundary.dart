@@ -77,15 +77,15 @@ class _SetBoundaryState extends State<SetBoundary> {
                     child: RaisedButton(
                       child: Text("Start game"),
                       onPressed: () async {
+                        await DbService(userId: userId).initialiseGame();
+                        await DbService(userId: userId)
+                            .setBoundary(boundaryPosition);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PlayingGame(),
                           ),
                         );
-                        await DbService(userId: userId).initialiseGame();
-                        await DbService(userId: userId)
-                            .setBoundary(boundaryPosition);
                       },
                     ),
                   ),
@@ -199,7 +199,7 @@ class _MapState extends State<Map> {
         target: _myLocation != null
             ? LatLng(_myLocation.latitude, _myLocation.longitude)
             : LatLng(0, 0),
-        zoom: 17,
+        zoom: 16,
       ),
       circles: _circles,
       markers: _markers,

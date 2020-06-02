@@ -77,4 +77,18 @@ class DbService {
           GeoPoint(boundaryPosition.latitude, boundaryPosition.longitude)
     });
   }
+
+  Future<LatLng> get getBoundaryPosition {
+    return gameRef.get().then((doc) {
+      if (doc.exists) {
+        print("doc exists");
+      }
+      final GeoPoint boundary = doc.data["boundaryPosition"];
+
+      print(doc.data);
+
+      print("got boundary from db: $boundary");
+      return LatLng(boundary.latitude, boundary.longitude);
+    });
+  }
 }
