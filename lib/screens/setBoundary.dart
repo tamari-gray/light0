@@ -193,11 +193,6 @@ class _MapState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
-    final _userLocation = Provider.of<UserLocation>(context);
-
-    print("live location: $_userLocation");
-    print("current location: $_myLocation");
-
     return GoogleMap(
       onMapCreated: _onMapCreated,
       initialCameraPosition: CameraPosition(
