@@ -15,25 +15,41 @@ class SetBoundary extends StatefulWidget {
 }
 
 class _SetBoundaryState extends State<SetBoundary> {
+  LatLng _boundaryPosition;
+
+  _setBoundaryPosition(LatLng newPosition) {
+    setState(() {
+      print("updating boundary position from map: ${newPosition.latitude}");
+      _boundaryPosition = newPosition;
+    });
+  }
+
+  @override
+  void initState() {
+    _boundaryPosition = LatLng(0, 0);
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Hold and drag to reposition"),
+        title: Text("Reposition boundary"),
         actions: <Widget>[],
       ),
       body: Container(
         child: Stack(
           children: <Widget>[
-            Map(),
+            Map(setBoundaryPosition: _setBoundaryPosition),
             Container(
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
                 child: RaisedButton(
                   onPressed: () {
-                    _showMyDialog(_user.userId);
+                    _showMyDialog(_user.userId, _boundaryPosition);
                   },
                   child: Text("start game"),
                 ),
@@ -45,7 +61,7 @@ class _SetBoundaryState extends State<SetBoundary> {
     );
   }
 
-  Future<void> _showMyDialog(String userId) async {
+  Future<void> _showMyDialog(String userId, LatLng boundaryPosition) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap back
@@ -68,6 +84,8 @@ class _SetBoundaryState extends State<SetBoundary> {
                           ),
                         );
                         await DbService(userId: userId).initialiseGame();
+                        await DbService(userId: userId)
+                            .setBoundary(boundaryPosition);
                       },
                     ),
                   ),
@@ -88,6 +106,10 @@ class _SetBoundaryState extends State<SetBoundary> {
 class Map extends StatefulWidget {
   @override
   _MapState createState() => _MapState();
+
+  final Function(LatLng) setBoundaryPosition;
+
+  Map({this.setBoundaryPosition});
 }
 
 class _MapState extends State<Map> {
@@ -109,6 +131,7 @@ class _MapState extends State<Map> {
         _myLocation = value;
       });
       _setBoundary(LatLng(value.latitude, value.longitude));
+      widget.setBoundaryPosition(LatLng(value.latitude, value.longitude));
     });
   }
 
@@ -145,10 +168,13 @@ class _MapState extends State<Map> {
           //set new boundary location
           Set<Circle> newCircles = HashSet<Circle>();
 
+          final LatLng newBoundaryPosition =
+              LatLng(value.latitude, value.longitude);
+
           newCircles.add(
             Circle(
               circleId: CircleId("0"),
-              center: LatLng(value.latitude, value.longitude),
+              center: newBoundaryPosition,
               radius: 250,
               strokeWidth: 3,
               strokeColor: Color.fromRGBO(102, 51, 153, 1),
@@ -158,6 +184,7 @@ class _MapState extends State<Map> {
           );
           setState(() {
             _circles = newCircles;
+            widget.setBoundaryPosition(newBoundaryPosition);
           });
         }),
       ),
