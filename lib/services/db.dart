@@ -25,7 +25,10 @@ class DbService {
     print(
         "got user data: ${snapshot.data['username']}, isAdmin = ${snapshot.data['admin']}");
     return UserData(
-        username: snapshot.data['name'], isAdmin: snapshot.data["admin"]);
+      username: snapshot.data['name'],
+      isAdmin: snapshot.data["admin"],
+      isTagger: snapshot.data["tagger"],
+    );
   }
 
   Stream<UserData> get userData {

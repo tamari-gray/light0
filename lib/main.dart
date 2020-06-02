@@ -33,13 +33,13 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: Wrapper(),
+        home: AuthWrapper(),
       ),
     );
   }
 }
 
-class Wrapper extends StatelessWidget {
+class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
