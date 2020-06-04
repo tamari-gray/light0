@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:light0/models/userLocation.dart';
 import 'package:light0/services/db.dart';
-import 'package:light0/screens/playingGame.dart';
+import 'package:light0/screens/in_game/playingGame.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/services/location.dart';
 import 'package:provider/provider.dart';
