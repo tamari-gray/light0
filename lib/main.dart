@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:light0/models/userLocation.dart';
-import 'package:light0/screens/signUp.dart';
-import 'package:light0/screens/lobby.dart';
+import 'package:light0/screens/auth/signUp.dart';
+import 'package:light0/screens/init_game/lobby.dart';
 import 'package:light0/services/auth.dart';
 import 'package:light0/services/db.dart';
 import 'package:light0/models/user.dart';

@@ -3,7 +3,7 @@ import 'package:light0/services/auth.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/services/db.dart';
 import 'package:light0/models/userData.dart';
-import 'package:light0/screens/setBoundary.dart';
+import 'package:light0/screens/init_game/setBoundary.dart';
 import 'package:provider/provider.dart';
 
 class Lobby extends StatefulWidget {
