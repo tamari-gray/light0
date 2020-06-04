@@ -94,4 +94,14 @@ class DbService {
       return LatLng(boundary.latitude, boundary.longitude);
     });
   }
+
+  startGame() async {
+    return await gameRef.updateData({"gameState": "playing"});
+  }
+
+  Stream<String> get gameState {
+    return gameRef.snapshots().map((DocumentSnapshot snap) {
+      return snap.data["gameState"].toString();
+    });
+  }
 }

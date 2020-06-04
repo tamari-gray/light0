@@ -10,6 +10,7 @@ import 'package:light0/services/location.dart';
 
 import 'package:countdown_flutter/countdown_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_progress_button/flutter_progress_button.dart';
 
 class PlayingGame extends StatefulWidget {
   const PlayingGame({Key key}) : super(key: key);
@@ -19,44 +20,121 @@ class PlayingGame extends StatefulWidget {
 }
 
 class _PlayingGameState extends State<PlayingGame> {
-  String _gameState;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    _gameState = 'initialising';
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
-    return StreamProvider<UserData>(
-      create: (_) => DbService(userId: _user.userId).userData,
-      child: WillPopScope(
-        onWillPop: () async => true,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text("game screen"),
-            leading: IconButton(
-              icon: Icon(Icons.ac_unit),
-              // onPressed: () => Navigator.of(context).pop(),
+    return MultiProvider(
+      providers: [
+        StreamProvider<UserData>(
+            create: (_) => DbService(userId: _user.userId).userData),
+        StreamProvider(create: (_) => DbService().gameState),
+      ],
+      child: GameScreen(),
+    );
+  }
+}
+
+class GameScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final _gameState = Provider.of<String>(context);
+    final _userData = Provider.of<UserData>(context) != null
+        ? Provider.of<UserData>(context)
+        : UserData(isTagger: false);
+    return WillPopScope(
+      onWillPop: () async => true,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Light0"),
+          actions: <Widget>[
+            FlatButton.icon(
+              label: Text("info"),
+              icon: const Icon(Icons.info),
+              onPressed: () async {
+                //show dialog with information
+              },
             ),
-          ),
-          body: Container(
-            child: Column(
-              children: <Widget>[
-                Container(height: 350, child: InGameMap()),
-                Container(
-                  height: 150,
-                  child: _gameState == "initialising"
-                      ? InitCountdown()
-                      : Container(),
-                )
-              ],
-            ),
+          ],
+        ),
+        body: Container(
+          child: Column(
+            children: <Widget>[
+              Container(
+                height: 350,
+                // child: InGameMap(),
+              ),
+              Container(
+                child: _gameInfo(_gameState),
+              ),
+              Container(
+                child: RaisedButton.icon(
+                  onPressed: () {},
+                  icon: Icon(Icons.my_location),
+                  label: _userData.isTagger ? Text("Tag") : Text("Grab"),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Container(
+                  child: _userData.isTagger
+                      ? Text("hold to tag player")
+                      : Text("hold to grab item"),
+                ),
+              )
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  _gameInfo(String gameState) {
+    if (gameState == "initialising") {
+      return InitCountdown();
+    } else if (gameState == "playing") {
+      return RadarTimer();
+    }
+  }
+}
+
+class RadarTimer extends StatefulWidget {
+  @override
+  _RadarTimerState createState() => _RadarTimerState();
+}
+
+class _RadarTimerState extends State<RadarTimer> {
+  @override
+  Widget build(BuildContext context) {
+    final _userData = Provider.of<UserData>(context) != null
+        ? Provider.of<UserData>(context)
+        : UserData(isTagger: false);
+    return Center(
+      child: CountdownFormatted(
+        duration: Duration(minutes: 5),
+        builder: (BuildContext ctx, String remaining) {
+          return _userData.isTagger
+              ? Text("$remaining until next radar")
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                      child: Text(
+                        "$remaining until next radar",
+                        style: TextStyle(fontSize: 25),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 50),
+                      child: !_userData.isTagger
+                          ? Text(
+                              "Go find an item to hide location on the next radar!")
+                          : Container(),
+                    ),
+                  ],
+                );
+        },
       ),
     );
   }
@@ -141,6 +219,7 @@ class InitCountdown extends StatefulWidget {
 class _InitCountdownState extends State<InitCountdown> {
   @override
   Widget build(BuildContext context) {
+    final _user = Provider.of<User>(context);
     final _userData = Provider.of<UserData>(context) != null
         ? Provider.of<UserData>(context)
         : UserData(isTagger: false);
@@ -148,10 +227,10 @@ class _InitCountdownState extends State<InitCountdown> {
     print("am i a tagger: ${_userData.isTagger}");
     return Center(
       child: Countdown(
-        duration: Duration(seconds: 90),
+        duration: Duration(seconds: 3),
         onFinish: () {
-          print('finished!');
-          // DbService().startGame
+          // print('finished!');
+          DbService(userId: _user.userId).startGame();
         },
         builder: (BuildContext ctx, Duration remaining) {
           return _userData != null
