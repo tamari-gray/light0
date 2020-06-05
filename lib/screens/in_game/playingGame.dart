@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/screens/in_game/initCountdown.dart';
+import 'package:light0/screens/in_game/map.dart';
 import 'package:light0/screens/in_game/radarTimer.dart';
 import 'package:light0/services/db.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +56,7 @@ class GameScreen extends StatelessWidget {
             children: <Widget>[
               Container(
                 height: 350,
-                // child: InGameMap(),
+                child: InGameMap(),
               ),
               Container(
                 child: _gameInfo(_gameState),

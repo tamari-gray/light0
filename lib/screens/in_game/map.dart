@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:light0/models/userLocation.dart';
 import 'package:light0/services/db.dart';
+import 'package:light0/services/geoquery.dart';
 import 'package:light0/services/location.dart';
 
 class InGameMap extends StatefulWidget {
@@ -18,13 +19,13 @@ class _InGameMapState extends State<InGameMap> {
   Set<Circle> _circles = HashSet<Circle>();
 
   UserLocation _myLocation;
-  LatLng _itemLocation;
+  LatLng _boundaryCentre;
 
-  double boundaryRadius;
+  double _boundaryRadius;
 
   @override
   void initState() {
-    boundaryRadius = 250;
+    _boundaryRadius = 250;
     _getLocation();
     _updateBoundaryPosition();
     super.initState();
@@ -45,7 +46,7 @@ class _InGameMapState extends State<InGameMap> {
         Circle(
           circleId: CircleId("boundary"),
           center: position,
-          radius: boundaryRadius,
+          radius: _boundaryRadius,
           strokeWidth: 3,
           strokeColor: Color.fromRGBO(102, 51, 153, 1),
           fillColor: Color.fromRGBO(102, 51, 153, 0.3),
@@ -54,10 +55,10 @@ class _InGameMapState extends State<InGameMap> {
       );
 
       setState(() {
-        _itemLocation = position;
+        _boundaryCentre = position;
       });
 
-      _setItems(position);
+      _setItems();
     });
   }
 
@@ -72,13 +73,13 @@ class _InGameMapState extends State<InGameMap> {
   // _mapController.setMapStyle(style);
   // }
 
-  void _setItems(LatLng point) {
-    double x0 = point.latitude;
-    double y0 = point.longitude;
+  LatLng _newItemPosition() {
+    double y0 = _boundaryCentre.latitude;
+    double x0 = _boundaryCentre.longitude;
     Random randomPoint = new Random();
 
     // radius to degrees
-    double radiusInDegrees = boundaryRadius / 111000;
+    double radiusInDegrees = _boundaryRadius / 111000;
 
     // calcliations
     double u = randomPoint.nextDouble();
@@ -94,21 +95,40 @@ class _InGameMapState extends State<InGameMap> {
 
     print("new item coords: $foundLatitude, $foundLongitude");
 
-    // test for random position item
+    return LatLng(foundLatitude, foundLongitude);
+  }
 
-    // Set<Marker> _newItems = HashSet<Marker>();
+  void _setItems() async {
+    // double playerCount = 10;
+    double itemCount = 2;
+    Set<Marker> _newItems = HashSet<Marker>();
 
-    // _newItems.add(
-    //   Marker(
-    //     markerId: MarkerId("yeet"),
-    //     position: LatLng(foundLongitude, foundLatitude),
-    //   ),
-    // );
+    // make new item for items in itemcount
+    for (var i = 0; i < itemCount; i++) {
+      while (_newItems.length < itemCount) {
+        LatLng _position = _newItemPosition();
 
-    // setState(() {
-    // _itemLocation = LatLng(foundLongitude, foundLatitude);
-    // _items = _newItems;
-    // });
+        // geoquery check
+        // Future<bool> hi = GeoqueryService.checkIfSufficientlySpaced(
+        //     _position, _boundaryRadius.toInt());
+        bool _itemSufficientlySpaced = true;
+
+        if (_itemSufficientlySpaced) {
+          _newItems.add(
+            Marker(
+              markerId: MarkerId("${_position.latitude}"),
+              position: _position,
+            ),
+          );
+        }
+      }
+
+      if (_newItems.length == itemCount) {
+        setState(() {
+          _items = _newItems;
+        });
+      }
+    }
   }
 
   @override
@@ -127,14 +147,15 @@ class _InGameMapState extends State<InGameMap> {
           markers: _items,
           myLocationEnabled: true,
         ),
-        // RaisedButton( // test for show random items reset
+        // RaisedButton(
+        //   // test for show random items reset
         //   onPressed: () {
-        //     _setItems(_itemLocation);
-        //     _mapController.moveCamera(
-        //       CameraUpdate.newLatLng(_itemLocation),
-        //     );
+        //     _setItems();
+        //     // _mapController.moveCamera(
+        //     //   CameraUpdate.newLatLng(),
+        //     // );
         //   },
-        //   child: Text("show item"),
+        //   child: Text("reset item"),
         // )
       ],
     );
