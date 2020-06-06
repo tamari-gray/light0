@@ -158,7 +158,7 @@ class _UserAbilitiesState extends State<UserAbilities> {
   Widget build(BuildContext context) {
     return Column(children: <Widget>[
       RadarTimer(),
-      if (_timer < 6) Text("$_timer"),
+      _timer < 6 ? Text("$_timer") : Text(""),
       Container(
         child: GestureDetector(
           onTapDown: (e) async {
@@ -167,13 +167,18 @@ class _UserAbilitiesState extends State<UserAbilities> {
             final bool _itemDetected =
                 await DbService().checkForItem(_currentLocation);
 
-            _startTimer();
-
-            // start timer
             if (_itemDetected) {
-              // timer start
+              _startTimer();
             } else {
-              // return "no items within 5 metres"
+              final noItemNotification = SnackBar(
+                content: Text('No items within 5 metres'),
+                action: SnackBarAction(
+                    label: "dismiss",
+                    onPressed: () {
+                      Scaffold.of(context).hideCurrentSnackBar();
+                    }),
+              );
+              Scaffold.of(context).showSnackBar(noItemNotification);
             }
           },
           onTapUp: (e) {
