@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/models/user.dart';
+import 'package:light0/models/userLocation.dart';
 import 'package:light0/screens/in_game/initCountdown.dart';
 import 'package:light0/screens/in_game/map.dart';
 import 'package:light0/screens/in_game/radarTimer.dart';
 import 'package:light0/services/db.dart';
+import 'package:light0/services/location.dart';
+import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
 class PlayingGame extends StatefulWidget {
@@ -56,10 +61,12 @@ class GameScreen extends StatelessWidget {
             children: <Widget>[
               Container(
                 height: 350,
-                child: InGameMap(),
+                child: InGameMap(
+                  admin: _userData.isAdmin,
+                ),
               ),
               Container(
-                child: _gameInfo(_gameState),
+                child: _gameInfo(_gameState, _userData.isTagger),
               ),
             ],
           ),
@@ -68,42 +75,124 @@ class GameScreen extends StatelessWidget {
     );
   }
 
-  _gameInfo(String gameState) {
+  _gameInfo(String gameState, bool tagger) {
     if (gameState == "initialising") {
       return InitCountdown();
     } else if (gameState == "playing") {
-      return UseAbility();
+      return UserAbilities();
     } else if (gameState == "finished") {
       return "hi";
     }
   }
 }
 
-class UseAbility extends StatelessWidget {
-  const UseAbility({
-    Key key,
-  }) : super(key: key);
+class UserAbilities extends StatefulWidget {
+  @override
+  _UserAbilitiesState createState() => _UserAbilitiesState();
+}
+
+class _UserAbilitiesState extends State<UserAbilities> {
+  bool _showTimer;
+  int _timer;
+
+  @override
+  void initState() {
+    _timer = 6;
+    _showTimer = false;
+    _checkPermission();
+    _checkIfEnabled();
+
+    super.initState();
+  }
+
+  Location location = new Location();
+
+  bool _serviceEnabled;
+  PermissionStatus _permissionGranted;
+  LocationData _locationData;
+
+  _checkIfEnabled() async {
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+  }
+
+  _checkPermission() async {
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+  }
+
+  Future<UserLocation> _getLocation() async {
+    return await location.getLocation().then((LocationData currentLocation) {
+      return UserLocation(
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude);
+    });
+  }
+
+  _startTimer() {
+    Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      setState(() {
+        _timer = _timer - 1;
+      });
+      if (_timer == -1) {
+        setState(() {
+          _timer = 6;
+        });
+        timer.cancel();
+      }
+      print("");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final _userData = Provider.of<UserData>(context) != null
-        ? Provider.of<UserData>(context)
-        : UserData(isTagger: false);
     return Column(children: <Widget>[
       RadarTimer(),
+      if (_timer < 6) Text("$_timer"),
       Container(
-        child: RaisedButton.icon(
-          onPressed: () {},
-          icon: Icon(Icons.my_location),
-          label: _userData.isTagger ? Text("Tag") : Text("Grab"),
+        child: GestureDetector(
+          onTapDown: (e) async {
+            // geoquery => update item in db : "no items within 5 metres"
+            final _currentLocation = await _getLocation();
+            final bool _itemDetected =
+                await DbService().checkForItem(_currentLocation);
+
+            _startTimer();
+
+            // start timer
+            if (_itemDetected) {
+              // timer start
+            } else {
+              // return "no items within 5 metres"
+            }
+          },
+          onTapUp: (e) {
+            // check if timer == 0
+            // if timer = 0 while onTapDown => give item to player
+            // else: player has dropped item => reset in db
+          },
+          child: RaisedButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.my_location),
+            label: Text("Grab"),
+            animationDuration: Duration(seconds: 5),
+          ),
         ),
       ),
       Padding(
         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Container(
-          child: _userData.isTagger
-              ? Text("hold to tag player")
-              : Text("hold to grab item"),
+          child: Text("hold to grab item"),
         ),
       )
     ]);
