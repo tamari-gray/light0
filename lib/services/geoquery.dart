@@ -38,4 +38,8 @@ class GeoqueryService {
         .collection('items')
         .add({'position': myLocation.data});
   }
+
+  setItems(items) {
+    // set if admin
+  }
 }

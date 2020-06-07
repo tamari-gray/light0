@@ -105,10 +105,10 @@ class DbService {
   Stream<GameData> get gameData {
     return gameRef.snapshots().map((DocumentSnapshot snap) {
       return GameData(
-        boundaryPosition: LatLng(snap.data["boundaryPosition"].latitude,
-            snap.data["boundaryPosition"].longitude),
+        boundaryPosition: snap.data["boundaryPosition"],
         boundaryRadius: snap.data["boundaryRadius"],
         gameState: snap.data["gameState"].toString(),
+        remainingPlayers: snap.data["remainingPlayers"],
       );
     });
   }
@@ -134,7 +134,11 @@ class DbService {
   }
 
   Stream<List<Item>> get getItems {
-    return gameRef.collection("items").snapshots().map(_itemFromSnapshot);
+    return gameRef
+        .collection("items")
+        .where("isPickedUp", isEqualTo: false)
+        .snapshots()
+        .map(_itemFromSnapshot);
   }
 
   // add items to db coll
