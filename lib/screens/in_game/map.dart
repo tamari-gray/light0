@@ -1,21 +1,25 @@
 import 'dart:collection';
-import 'dart:math';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:light0/models/item.dart';
 import 'package:light0/models/userLocation.dart';
 import 'package:light0/services/db.dart';
-import 'package:light0/services/geoquery.dart';
+import 'package:light0/services/items.dart';
 import 'package:light0/services/location.dart';
+import 'package:provider/provider.dart';
 
 class InGameMap extends StatefulWidget {
+  final bool tagger;
+  InGameMap({@required this.tagger});
+
   @override
   _InGameMapState createState() => _InGameMapState();
 }
 
 class _InGameMapState extends State<InGameMap> {
   GoogleMapController _mapController;
-  Set<Marker> _items = HashSet<Marker>();
+  Set<Marker> _itemMarkers = HashSet<Marker>();
   Set<Circle> _circles = HashSet<Circle>();
 
   UserLocation _myLocation;
@@ -25,7 +29,7 @@ class _InGameMapState extends State<InGameMap> {
 
   @override
   void initState() {
-    _boundaryRadius = 250;
+    _boundaryRadius = 50;
     _getLocation();
     _updateBoundaryPosition();
     super.initState();
@@ -58,7 +62,7 @@ class _InGameMapState extends State<InGameMap> {
         _boundaryCentre = position;
       });
 
-      _setItems();
+      // if (widget.tagger) _setItems();
     });
   }
 
@@ -73,66 +77,17 @@ class _InGameMapState extends State<InGameMap> {
   // _mapController.setMapStyle(style);
   // }
 
-  LatLng _newItemPosition() {
-    double y0 = _boundaryCentre.latitude;
-    double x0 = _boundaryCentre.longitude;
-    Random randomPoint = new Random();
-
-    // radius to degrees
-    double radiusInDegrees = _boundaryRadius / 111000;
-
-    // calcliations
-    double u = randomPoint.nextDouble();
-    double v = randomPoint.nextDouble();
-    double w = radiusInDegrees * sqrt(u);
-    double t = 2 * pi * v;
-    double x = w * cos(t);
-    double y = w * sin(t);
-
-    double newX = x / cos(y0);
-    double foundLongitude = newX + x0;
-    double foundLatitude = y + y0;
-
-    print("new item coords: $foundLatitude, $foundLongitude");
-
-    return LatLng(foundLatitude, foundLongitude);
-  }
-
-  void _setItems() async {
-    // double playerCount = 10;
-    double itemCount = 2;
-    Set<Marker> _newItems = HashSet<Marker>();
-
-    // make new item for items in itemcount
-    for (var i = 0; i < itemCount; i++) {
-      while (_newItems.length < itemCount) {
-        LatLng _position = _newItemPosition();
-
-        // geoquery check
-        // Future<bool> hi = GeoqueryService.checkIfSufficientlySpaced(
-        //     _position, _boundaryRadius.toInt());
-        bool _itemSufficientlySpaced = true;
-
-        if (_itemSufficientlySpaced) {
-          _newItems.add(
-            Marker(
-              markerId: MarkerId("${_position.latitude}"),
-              position: _position,
-            ),
-          );
-        }
-      }
-
-      if (_newItems.length == itemCount) {
-        setState(() {
-          _items = _newItems;
-        });
-      }
-    }
+  void _setItemMarkers(items) {
+    final _newItemMarkers = ItemsService().markersFromItems(items);
+    setState(() {
+      _itemMarkers = _newItemMarkers;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<Item> _itemsList = Provider.of<List<Item>>(context);
+    if (_itemsList != null) _setItemMarkers(_itemsList);
     return Stack(
       children: <Widget>[
         GoogleMap(
@@ -144,19 +99,9 @@ class _InGameMapState extends State<InGameMap> {
             zoom: 17,
           ),
           circles: _circles,
-          markers: _items,
+          markers: _itemMarkers,
           myLocationEnabled: true,
         ),
-        // RaisedButton(
-        //   // test for show random items reset
-        //   onPressed: () {
-        //     _setItems();
-        //     // _mapController.moveCamera(
-        //     //   CameraUpdate.newLatLng(),
-        //     // );
-        //   },
-        //   child: Text("reset item"),
-        // )
       ],
     );
   }

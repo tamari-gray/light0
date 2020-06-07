@@ -102,7 +102,7 @@ class DbService {
     return await gameRef.updateData({"gameState": "playing"});
   }
 
-  Stream<GameData> get game {
+  Stream<GameData> get gameData {
     return gameRef.snapshots().map((DocumentSnapshot snap) {
       return GameData(
         boundaryPosition: LatLng(snap.data["boundaryPosition"].latitude,
@@ -127,11 +127,18 @@ class DbService {
     return snapshot.documents.map((doc) {
       // print(doc.data["username"]);
       return Item(
-          isPickedUp: doc.data["isPickedUp"] ?? true, position: LatLng(0, 0));
+        isPickedUp: doc.data["isPickedUp"] ?? true,
+        position: GeoPoint(0, 0),
+      );
     }).toList();
   }
 
   Stream<List<Item>> get getItems {
     return gameRef.collection("items").snapshots().map(_itemFromSnapshot);
+  }
+
+  // add items to db coll
+  setItems(List<Item> items) async {
+    // await
   }
 }
