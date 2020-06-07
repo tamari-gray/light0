@@ -16,6 +16,7 @@ class SetBoundary extends StatefulWidget {
 
 class _SetBoundaryState extends State<SetBoundary> {
   LatLng _boundaryPosition;
+  double _boundaryRadius;
 
   _setBoundaryPosition(LatLng newPosition) {
     setState(() {
@@ -27,6 +28,7 @@ class _SetBoundaryState extends State<SetBoundary> {
   @override
   void initState() {
     _boundaryPosition = LatLng(0, 0);
+    _boundaryRadius = 50;
 
     super.initState();
   }
@@ -46,10 +48,11 @@ class _SetBoundaryState extends State<SetBoundary> {
             Container(
               alignment: Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
+                padding: EdgeInsets.fromLTRB(0, 50, 0, 100),
                 child: RaisedButton(
                   onPressed: () {
-                    _showMyDialog(_user.userId, _boundaryPosition);
+                    _showMyDialog(
+                        _user.userId, _boundaryPosition, _boundaryRadius);
                   },
                   child: Text("start game"),
                 ),
@@ -61,7 +64,8 @@ class _SetBoundaryState extends State<SetBoundary> {
     );
   }
 
-  Future<void> _showMyDialog(String userId, LatLng boundaryPosition) async {
+  Future<void> _showMyDialog(
+      String userId, LatLng boundaryPosition, double boundaryRadius) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap back
@@ -79,7 +83,7 @@ class _SetBoundaryState extends State<SetBoundary> {
                       onPressed: () async {
                         await DbService(userId: userId).initialiseGame();
                         await DbService(userId: userId)
-                            .setBoundary(boundaryPosition);
+                            .setBoundary(boundaryPosition, boundaryRadius);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -151,7 +155,7 @@ class _MapState extends State<Map> {
       Circle(
         circleId: CircleId("0"),
         center: location,
-        radius: 250,
+        radius: 50,
         strokeWidth: 3,
         strokeColor: Color.fromRGBO(102, 51, 153, 1),
         fillColor: Color.fromRGBO(102, 51, 153, 0.3),

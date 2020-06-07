@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:light0/models/gameData.dart';
+import 'package:light0/models/item.dart';
 import 'package:light0/models/userData.dart';
+import 'package:light0/models/userLocation.dart';
 
 class DbService {
   final String userId;
@@ -72,11 +75,12 @@ class DbService {
         .updateData({"tagger": true});
   }
 
-  setBoundary(LatLng boundaryPosition) async {
+  setBoundary(LatLng boundaryPosition, double boundaryRadius) async {
     print("setting boundary in firebase");
     return await gameRef.updateData({
       "boundaryPosition":
-          GeoPoint(boundaryPosition.latitude, boundaryPosition.longitude)
+          GeoPoint(boundaryPosition.latitude, boundaryPosition.longitude),
+      "boundaryRadius": boundaryRadius
     });
   }
 
@@ -98,9 +102,36 @@ class DbService {
     return await gameRef.updateData({"gameState": "playing"});
   }
 
-  Stream<String> get gameState {
+  Stream<GameData> get game {
     return gameRef.snapshots().map((DocumentSnapshot snap) {
-      return snap.data["gameState"].toString();
+      return GameData(
+        boundaryPosition: LatLng(snap.data["boundaryPosition"].latitude,
+            snap.data["boundaryPosition"].longitude),
+        boundaryRadius: snap.data["boundaryRadius"],
+        gameState: snap.data["gameState"].toString(),
+      );
     });
+  }
+
+  Future<bool> checkForItem(UserLocation location) async {
+    // do geoquery
+    print("checking for item at: ${location.latitude}");
+
+    // update db
+    return await false;
+  }
+
+  List<Item> _itemFromSnapshot(QuerySnapshot snapshot) {
+    print("getting ${snapshot.documents.length} items");
+
+    return snapshot.documents.map((doc) {
+      // print(doc.data["username"]);
+      return Item(
+          isPickedUp: doc.data["isPickedUp"] ?? true, position: LatLng(0, 0));
+    }).toList();
+  }
+
+  Stream<List<Item>> get getItems {
+    return gameRef.collection("items").snapshots().map(_itemFromSnapshot);
   }
 }
