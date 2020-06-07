@@ -23,9 +23,9 @@ class MyApp extends StatelessWidget {
         StreamProvider<User>(
           create: (_) => AuthService().user,
         ),
-        StreamProvider<UserLocation>(
-          create: (_) => LocationService().locationStream,
-        ),
+        // StreamProvider<UserLocation>(
+        //   create: (_) => LocationService().locationStream,
+        // ),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

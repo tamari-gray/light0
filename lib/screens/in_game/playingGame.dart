@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:light0/models/gameData.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/models/userLocation.dart';
@@ -27,7 +28,7 @@ class _PlayingGameState extends State<PlayingGame> {
       providers: [
         StreamProvider<UserData>(
             create: (_) => DbService(userId: _user.userId).userData),
-        StreamProvider(create: (_) => DbService().gameState),
+        StreamProvider<GameData>(create: (_) => DbService().gameData),
       ],
       child: GameScreen(),
     );
@@ -41,6 +42,10 @@ class GameScreen extends StatelessWidget {
     final _userData = Provider.of<UserData>(context) != null
         ? Provider.of<UserData>(context)
         : UserData(isTagger: false);
+    final _gameData = Provider.of<GameData>(context) != null
+        ? Provider.of<GameData>(context)
+        : false;
+    // final _gameS
     return WillPopScope(
       onWillPop: () async => true,
       child: Scaffold(
@@ -49,7 +54,7 @@ class GameScreen extends StatelessWidget {
           actions: <Widget>[
             FlatButton.icon(
               label: Text("info"),
-              icon: const Icon(Icons.info),
+              icon: Icon(Icons.info),
               onPressed: () async {
                 //show dialog with information
               },
@@ -62,7 +67,7 @@ class GameScreen extends StatelessWidget {
               Container(
                 height: 350,
                 child: InGameMap(
-                  admin: _userData.isAdmin,
+                  tagger: _userData.isTagger,
                 ),
               ),
               Container(
@@ -144,13 +149,19 @@ class _UserAbilitiesState extends State<UserAbilities> {
       setState(() {
         _timer = _timer - 1;
       });
-      if (_timer == -1) {
+      if (_timer == 5) {
+        // set ItemPickedUp == "attempting"; => tagger listens to coll and gets notified when attempting == true
+        // DbService().attemptTograbItem()
+
+      } else if (_timer == 0) {
+        // grab item
+        // DbService().grabItem();
+      } else if (_timer == -1) {
         setState(() {
           _timer = 6;
         });
         timer.cancel();
       }
-      print("");
     });
   }
 
