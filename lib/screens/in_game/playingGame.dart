@@ -38,13 +38,12 @@ class _PlayingGameState extends State<PlayingGame> {
 class GameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final _gameState = Provider.of<String>(context);
     final _userData = Provider.of<UserData>(context) != null
         ? Provider.of<UserData>(context)
         : UserData(isTagger: false);
     final _gameData = Provider.of<GameData>(context) != null
         ? Provider.of<GameData>(context)
-        : false;
+        : GameData(gameState: "");
     // final _gameS
     return WillPopScope(
       onWillPop: () async => true,
@@ -71,7 +70,7 @@ class GameScreen extends StatelessWidget {
                 ),
               ),
               Container(
-                child: _gameInfo(_gameState, _userData.isTagger),
+                child: _gameInfo(_gameData.gameState, _userData.isTagger),
               ),
             ],
           ),

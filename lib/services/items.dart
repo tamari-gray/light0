@@ -4,10 +4,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:light0/models/gameData.dart';
 import 'package:light0/models/item.dart';
 import 'package:light0/services/db.dart';
 
-GeoPoint _newItemPosition(LatLng boundaryCentre, double radius) {
+GeoPoint _newItemPosition(GeoPoint boundaryCentre, double radius) {
   double y0 = boundaryCentre.latitude;
   double x0 = boundaryCentre.longitude;
   Random randomPoint = new Random();
@@ -33,14 +34,15 @@ GeoPoint _newItemPosition(LatLng boundaryCentre, double radius) {
 }
 
 class ItemsService {
-  void generateNewItems(
-      LatLng boundaryCentre, double radius, double amountOfItems) async {
+  void generateNewItems(GameData gameData) async {
     List<Item> _newItems;
+    double amountOfItems = gameData.remainingPlayers / 2;
 
     // make new item for items in itemcount
     for (var i = 0; i < amountOfItems; i++) {
       while (_newItems.length < amountOfItems) {
-        GeoPoint _position = _newItemPosition(boundaryCentre, radius);
+        GeoPoint _position = _newItemPosition(
+            gameData.boundaryPosition, gameData.boundaryRadius);
 
         // geoquery check
         // Future<bool> hi = GeoqueryService.checkIfSufficientlySpaced(
@@ -59,6 +61,7 @@ class ItemsService {
 
       if (_newItems.length == amountOfItems) {
         await DbService().setItems(_newItems);
+        return;
         // return _newItems;
       }
     }
