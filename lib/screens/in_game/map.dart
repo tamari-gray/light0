@@ -79,6 +79,7 @@ class _InGameMapState extends State<InGameMap> {
 
   void _setItemMarkers(items) {
     final _newItemMarkers = ItemsService().markersFromItems(items);
+    print("putting items on map: $_newItemMarkers");
     setState(() {
       _itemMarkers = _newItemMarkers;
     });
@@ -86,7 +87,7 @@ class _InGameMapState extends State<InGameMap> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Item> _itemsList = Provider.of<List<Item>>(context);
+    final _itemsList = Provider.of<List<Item>>(context);
     if (_itemsList != null) _setItemMarkers(_itemsList);
     return Stack(
       children: <Widget>[

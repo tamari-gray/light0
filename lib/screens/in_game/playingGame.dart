@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:light0/models/gameData.dart';
+import 'package:light0/models/item.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/models/userLocation.dart';
@@ -29,6 +30,7 @@ class _PlayingGameState extends State<PlayingGame> {
         StreamProvider<UserData>(
             create: (_) => DbService(userId: _user.userId).userData),
         StreamProvider<GameData>(create: (_) => DbService().gameData),
+        StreamProvider<List<Item>>(create: (_) => DbService().getItems),
       ],
       child: GameScreen(),
     );
@@ -44,7 +46,6 @@ class GameScreen extends StatelessWidget {
     final _gameData = Provider.of<GameData>(context) != null
         ? Provider.of<GameData>(context)
         : GameData(gameState: "");
-    // final _gameS
     return WillPopScope(
       onWillPop: () async => true,
       child: Scaffold(

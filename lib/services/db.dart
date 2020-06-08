@@ -128,9 +128,9 @@ class DbService {
     return snapshot.documents.map((doc) {
       // print(doc.data["username"]);
       return Item(
-        isPickedUp: doc.data["isPickedUp"] ?? true,
-        position: GeoPoint(0, 0),
-      );
+          isPickedUp: doc.data["isPickedUp"] ?? true,
+          position: doc.data["position"],
+          id: doc.data["id"]);
     }).toList();
   }
 
@@ -144,6 +144,12 @@ class DbService {
 
   // add items to db coll
   setItems(List<Item> items) async {
-    // await
+    items.forEach((item) async {
+      await gameRef.collection("items").document(item.id).setData({
+        "isPickedUp": item.isPickedUp,
+        "position": item.position,
+        "id": item.id
+      });
+    });
   }
 }

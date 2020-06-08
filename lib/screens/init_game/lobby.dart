@@ -35,6 +35,7 @@ class _LobbyState extends State<Lobby> {
     final double _remainingPlayers = _players != null
         ? _players.where((player) => player.isTagger != true).length.toDouble()
         : 0;
+    print("calculated remaining players: $_remainingPlayers");
 
     final _snackBar = SnackBar(
       content: Text('choose a tagger'),

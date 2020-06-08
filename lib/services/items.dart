@@ -52,14 +52,15 @@ class ItemsService {
         if (_itemSufficientlySpaced) {
           _newItems.add(
             Item(
-              isPickedUp: false,
-              position: _position,
-            ),
+                isPickedUp: false,
+                position: _position,
+                id: "${_position.latitude}_${_position.latitude}"),
           );
         }
       }
 
       if (_newItems.length == amountOfItems) {
+        print("generated new items: ${_newItems.length}");
         await DbService().setItems(_newItems);
         return;
         // return _newItems;
