@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:light0/models/userData.dart';
 import 'package:light0/models/userLocation.dart';
 import 'package:light0/services/db.dart';
 import 'package:light0/screens/in_game/playingGame.dart';
@@ -12,6 +13,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class SetBoundary extends StatefulWidget {
   @override
   _SetBoundaryState createState() => _SetBoundaryState();
+
+  final double remainingPlayers;
+  SetBoundary({this.remainingPlayers});
 }
 
 class _SetBoundaryState extends State<SetBoundary> {
@@ -36,6 +40,7 @@ class _SetBoundaryState extends State<SetBoundary> {
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Reposition boundary"),
@@ -51,8 +56,8 @@ class _SetBoundaryState extends State<SetBoundary> {
                 padding: EdgeInsets.fromLTRB(0, 50, 0, 100),
                 child: RaisedButton(
                   onPressed: () {
-                    _showMyDialog(
-                        _user.userId, _boundaryPosition, _boundaryRadius);
+                    _showMyDialog(_user.userId, _boundaryPosition,
+                        _boundaryRadius, widget.remainingPlayers);
                   },
                   child: Text("start game"),
                 ),
@@ -64,8 +69,8 @@ class _SetBoundaryState extends State<SetBoundary> {
     );
   }
 
-  Future<void> _showMyDialog(
-      String userId, LatLng boundaryPosition, double boundaryRadius) async {
+  Future<void> _showMyDialog(String userId, LatLng boundaryPosition,
+      double boundaryRadius, double playerCount) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap back
@@ -81,7 +86,8 @@ class _SetBoundaryState extends State<SetBoundary> {
                     child: RaisedButton(
                       child: Text("Start game"),
                       onPressed: () async {
-                        await DbService(userId: userId).initialiseGame();
+                        await DbService(userId: userId)
+                            .initialiseGame(playerCount);
                         await DbService(userId: userId)
                             .setBoundary(boundaryPosition, boundaryRadius);
                         Navigator.push(

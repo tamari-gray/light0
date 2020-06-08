@@ -64,8 +64,9 @@ class DbService {
         .updateData({"admin": true});
   }
 
-  initialiseGame() async {
-    return await gameRef.setData({"gameState": "initialising"});
+  initialiseGame(double remainingPlayers) async {
+    return await gameRef.setData(
+        {"gameState": "initialising", "remainingPlayers": remainingPlayers});
   }
 
   setTagger(UserData tagger) async {
