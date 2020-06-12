@@ -47,7 +47,9 @@ class AuthWrapper extends StatelessWidget {
     if (_user == null) {
       return StreamProvider<List<UserData>>(
         create: (_) => DbService().playerData,
-        child: LoginAnon(),
+        child: LoginAnon(
+          auth: AuthService(),
+        ),
       );
     } else {
       return MultiProvider(

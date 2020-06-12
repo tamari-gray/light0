@@ -2,24 +2,34 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/services/db.dart';
 
-class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+abstract class Auth {
+  FirebaseAuth auth;
+  Stream<User> get user;
+  User userFromFirebaseUser(FirebaseUser user);
+  Future signInAnon(String username);
+  Future logout(userId);
+}
 
-  // set user in db
+class AuthService extends Auth {
+  @override
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   //auth change stream
+  @override
   Stream<User> get user {
-    return _auth.onAuthStateChanged.map(_userFromFirebaseUser);
+    return auth.onAuthStateChanged.map(userFromFirebaseUser);
   }
 
   // get user object from firebaseAuth user
-  User _userFromFirebaseUser(FirebaseUser user) {
+  @override
+  User userFromFirebaseUser(FirebaseUser user) {
     return user != null ? User(userId: user.uid) : null;
   }
 
+  @override
   Future signInAnon(String username) async {
     try {
-      AuthResult result = await _auth.signInAnonymously();
+      AuthResult result = await auth.signInAnonymously();
       FirebaseUser user = result.user;
 
       print("got user ${user.uid}");
@@ -27,11 +37,10 @@ class AuthService {
 
       print("making $username admin");
 
-      username == "tam_is_cool"
-          ? await DbService(userId: user.uid).makeAdmin()
-          : null;
+      if (username == "tam_is_cool")
+        await DbService(userId: user.uid).makeAdmin();
 
-      return _userFromFirebaseUser(user);
+      return userFromFirebaseUser(user);
     } catch (e) {
       String errorMsg = e.toString();
       print("error signing in $errorMsg");
@@ -39,8 +48,9 @@ class AuthService {
     }
   }
 
+  @override
   Future logout(userId) async {
     await DbService(userId: userId).deleteAccount();
-    return await _auth.signOut();
+    return await auth.signOut();
   }
 }
