@@ -129,11 +129,5 @@ void main() {
       );
       expect(signUpError, findsNWidgets(1));
     });
-
-    testWidgets('reset state if firebase auth returns error',
-        (WidgetTester tester) async {});
-
-    testWidgets('redirect to lobby page on firebase auth success',
-        (WidgetTester tester) async {});
   });
 }
