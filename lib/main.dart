@@ -61,7 +61,9 @@ class AuthWrapper extends StatelessWidget {
             create: (_) => DbService().playerData,
           ),
         ],
-        child: Lobby(),
+        child: Lobby(
+          dbService: DbService(userId: _user.userId),
+        ),
       );
     }
   }

@@ -5,13 +5,48 @@ import 'package:light0/models/item.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/models/userLocation.dart';
 
-class DbService {
+abstract class Db {
+  final String userId;
+  Db({this.userId});
+  Future updateUserData(String username);
+  deleteAccount();
+  UserData userDataFromSnapshot(DocumentSnapshot snapshot);
+  Stream<UserData> get userData;
+  List<UserData> playerDataFromSnapshot(QuerySnapshot snapshot);
+
+  Stream<List<UserData>> get playerData;
+
+  makeAdmin();
+
+  initialiseGame(double remainingPlayers);
+
+  setTagger(UserData tagger);
+
+  setBoundary(LatLng boundaryPosition, double boundaryRadius);
+
+  Future<LatLng> get getBoundaryPosition;
+
+  startGame();
+  Stream<GameData> get gameData;
+
+  Future<bool> checkForItem(UserLocation location);
+
+  List<Item> itemFromSnapshot(QuerySnapshot snapshot);
+
+  Stream<List<Item>> get getItems;
+
+  // add items to db coll
+  setItems(List<Item> items);
+}
+
+class DbService extends Db {
   final String userId;
   DbService({this.userId});
 
   final DocumentReference gameRef =
       Firestore.instance.collection("games").document("game1");
 
+  @override
   Future updateUserData(String username) async {
     return await gameRef
         .collection("users")
@@ -19,11 +54,13 @@ class DbService {
         .setData({"username": username});
   }
 
+  @override
   deleteAccount() async {
     return await gameRef.collection("users").document(userId).delete();
   }
 
-  UserData _userDataFromSnapshot(DocumentSnapshot snapshot) {
+  @override
+  UserData userDataFromSnapshot(DocumentSnapshot snapshot) {
     print(
         "got user data: ${snapshot.data['username']}, isAdmin = ${snapshot.data['admin']}");
     return UserData(
@@ -33,15 +70,17 @@ class DbService {
     );
   }
 
+  @override
   Stream<UserData> get userData {
     return gameRef
         .collection("users")
         .document(userId)
         .snapshots()
-        .map(_userDataFromSnapshot);
+        .map(userDataFromSnapshot);
   }
 
-  List<UserData> _playerDataFromSnapshot(QuerySnapshot snapshot) {
+  @override
+  List<UserData> playerDataFromSnapshot(QuerySnapshot snapshot) {
     print("getting ${snapshot.documents.length} players");
 
     return snapshot.documents.map((doc) {
@@ -52,10 +91,12 @@ class DbService {
     }).toList();
   }
 
+  @override
   Stream<List<UserData>> get playerData {
-    return gameRef.collection("users").snapshots().map(_playerDataFromSnapshot);
+    return gameRef.collection("users").snapshots().map(playerDataFromSnapshot);
   }
 
+  @override
   makeAdmin() async {
     // print("des es de admin");
     return await gameRef
@@ -64,11 +105,13 @@ class DbService {
         .updateData({"admin": true});
   }
 
+  @override
   initialiseGame(double remainingPlayers) async {
     return await gameRef.setData(
         {"gameState": "initialising", "remainingPlayers": remainingPlayers});
   }
 
+  @override
   setTagger(UserData tagger) async {
     return await gameRef
         .collection("users")
@@ -76,6 +119,7 @@ class DbService {
         .updateData({"tagger": true});
   }
 
+  @override
   setBoundary(LatLng boundaryPosition, double boundaryRadius) async {
     print("setting boundary in firebase");
     return await gameRef.updateData({
@@ -85,6 +129,7 @@ class DbService {
     });
   }
 
+  @override
   Future<LatLng> get getBoundaryPosition {
     return gameRef.get().then((doc) {
       if (doc.exists) {
@@ -99,10 +144,12 @@ class DbService {
     });
   }
 
+  @override
   startGame() async {
     return await gameRef.updateData({"gameState": "playing"});
   }
 
+  @override
   Stream<GameData> get gameData {
     return gameRef.snapshots().map((DocumentSnapshot snap) {
       return GameData(
@@ -114,6 +161,7 @@ class DbService {
     });
   }
 
+  @override
   Future<bool> checkForItem(UserLocation location) async {
     // do geoquery
     print("checking for item at: ${location.latitude}");
@@ -122,7 +170,8 @@ class DbService {
     return await false;
   }
 
-  List<Item> _itemFromSnapshot(QuerySnapshot snapshot) {
+  @override
+  List<Item> itemFromSnapshot(QuerySnapshot snapshot) {
     print("getting ${snapshot.documents.length} items");
 
     return snapshot.documents.map((doc) {
@@ -134,15 +183,16 @@ class DbService {
     }).toList();
   }
 
+  @override
   Stream<List<Item>> get getItems {
     return gameRef
         .collection("items")
         .where("isPickedUp", isEqualTo: false)
         .snapshots()
-        .map(_itemFromSnapshot);
+        .map(itemFromSnapshot);
   }
 
-  // add items to db coll
+  @override
   setItems(List<Item> items) async {
     items.forEach((item) async {
       await gameRef.collection("items").document(item.id).setData({

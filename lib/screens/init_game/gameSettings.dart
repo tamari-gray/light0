@@ -16,7 +16,7 @@ class GameSettings extends StatefulWidget {
 
   final double remainingPlayers;
 
-  GameSettings({@required this.remainingPlayers});
+  GameSettings({this.remainingPlayers});
 }
 
 class _GameSettingsState extends State<GameSettings> {
