@@ -37,8 +37,6 @@ class AuthService extends Auth {
       print("got user ${user.uid}");
       await UserInfoService(userId: user.uid).updateUserData(username);
 
-      print("making $username admin");
-
       if (username == "tam_is_cool")
         await UserInfoService(userId: user.uid).makeAdmin();
 
@@ -52,11 +50,13 @@ class AuthService extends Auth {
 
   @override
   Future logout(UserData user) async {
+    print("logging out user:  ${user.isAdmin}, ${user.userId}");
+    await auth.signOut();
     if (user.isAdmin) {
-      await InitGameService().deleteGame();
-    } else {
       await UserInfoService(userId: user.userId).deleteAccount();
+      return await InitGameService().deleteGame();
+    } else if (!user.isAdmin) {
+      return await UserInfoService(userId: user.userId).deleteAccount();
     }
-    return await auth.signOut();
   }
 }

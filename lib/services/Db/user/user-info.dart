@@ -34,9 +34,10 @@ class UserInfoService extends UserInfo {
     print(
         "got user data: ${snapshot.data['username']}, isAdmin = ${snapshot.data['admin']}");
     return UserData(
-      username: snapshot.data['name'],
-      isAdmin: snapshot.data["admin"],
-      isTagger: snapshot.data["tagger"],
+      userId: snapshot.documentID ?? "",
+      username: snapshot.data['name'] ?? "",
+      isAdmin: snapshot.data["admin"] ?? false,
+      isTagger: snapshot.data["tagger"] ?? false,
     );
   }
 

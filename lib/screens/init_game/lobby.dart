@@ -65,6 +65,7 @@ class _LobbyState extends State<Lobby> {
           title: Text("Welcome"),
           actions: <Widget>[
             FlatButton.icon(
+              key: Key("logout_button"),
               label: Text("leave game"),
               icon: const Icon(Icons.exit_to_app),
               onPressed: () async {
