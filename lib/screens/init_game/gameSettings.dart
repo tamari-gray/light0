@@ -1,7 +1,5 @@
 import 'dart:collection';
-
 import 'package:flutter/material.dart';
-import 'package:light0/models/userData.dart';
 import 'package:light0/models/userLocation.dart';
 import 'package:light0/services/Db/game/init_game.dart';
 import 'package:light0/screens/in_game/playingGame.dart';
@@ -28,10 +26,12 @@ class _GameSettingsState extends State<GameSettings> {
   UserLocation _myLocation;
   double _boundaryRadius;
   LatLng _boundaryPosition;
+  bool _hasMovedMarker;
 
   @override
   void initState() {
     _boundaryRadius = 100;
+    _hasMovedMarker = false;
     _getLocation();
     super.initState();
   }
@@ -150,6 +150,7 @@ class _GameSettingsState extends State<GameSettings> {
           setState(() {
             _circles = newCircles;
             _boundaryPosition = newBoundaryPosition;
+            _hasMovedMarker = true;
           });
         }),
       ),
@@ -245,14 +246,16 @@ class _GameSettingsState extends State<GameSettings> {
                         value: _boundaryRadius,
                         divisions: 45,
                         label: "$_boundaryRadius m",
-                        onChanged: (value) {
-                          if (value != _boundaryRadius) {
-                            print(value);
-                            setState(() {
-                              _boundaryRadius = value;
-                            });
-                          }
-                        },
+                        onChanged: _hasMovedMarker
+                            ? (value) {
+                                if (value != _boundaryRadius) {
+                                  print(value);
+                                  setState(() {
+                                    _boundaryRadius = value;
+                                  });
+                                }
+                              }
+                            : null,
                         onChangeEnd: (newRadius) {
                           print("updating radius $newRadius");
                           _setBoundaryRadius(newRadius);
