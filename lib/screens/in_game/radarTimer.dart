@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:light0/models/gameData.dart';
-import 'package:light0/services/db.dart';
-import 'package:light0/services/items.dart';
+import 'package:light0/services/Db/game/playing_game/items.dart';
 import 'package:provider/provider.dart';
 
 import 'package:light0/models/userData.dart';

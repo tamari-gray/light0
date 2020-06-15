@@ -1,13 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:light0/models/user.dart';
-import 'package:light0/services/db.dart';
+import 'package:light0/models/userData.dart';
+import 'package:light0/services/Db/game/init_game.dart';
+import 'package:light0/services/Db/user/user-info.dart';
 
 abstract class Auth {
   FirebaseAuth auth;
   Stream<User> get user;
   User userFromFirebaseUser(FirebaseUser user);
   Future signInAnon(String username);
-  Future logout(userId);
+  Future logout(UserData user);
 }
 
 class AuthService extends Auth {
@@ -33,12 +35,12 @@ class AuthService extends Auth {
       FirebaseUser user = result.user;
 
       print("got user ${user.uid}");
-      await DbService(userId: user.uid).updateUserData(username);
+      await UserInfoService(userId: user.uid).updateUserData(username);
 
       print("making $username admin");
 
       if (username == "tam_is_cool")
-        await DbService(userId: user.uid).makeAdmin();
+        await UserInfoService(userId: user.uid).makeAdmin();
 
       return userFromFirebaseUser(user);
     } catch (e) {
@@ -49,8 +51,12 @@ class AuthService extends Auth {
   }
 
   @override
-  Future logout(userId) async {
-    await DbService(userId: userId).deleteAccount();
+  Future logout(UserData user) async {
+    if (user.isAdmin) {
+      await InitGameService().deleteGame();
+    } else {
+      await UserInfoService(userId: user.userId).deleteAccount();
+    }
     return await auth.signOut();
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:light0/models/userLocation.dart';
 import 'package:light0/screens/auth/signUp.dart';
 import 'package:light0/screens/init_game/lobby.dart';
+import 'package:light0/services/Db/game/init_game.dart';
+import 'package:light0/services/Db/game/playing_game/players.dart';
+import 'package:light0/services/Db/user/user-info.dart';
 import 'package:light0/services/auth.dart';
-import 'package:light0/services/db.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/models/userData.dart';
-import 'package:light0/services/location.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -46,7 +46,7 @@ class AuthWrapper extends StatelessWidget {
 
     if (_user == null) {
       return StreamProvider<List<UserData>>(
-        create: (_) => DbService().playerData,
+        create: (_) => PlayersInfoService().playerData,
         child: LoginAnon(
           auth: AuthService(),
         ),
@@ -55,14 +55,14 @@ class AuthWrapper extends StatelessWidget {
       return MultiProvider(
         providers: [
           StreamProvider<UserData>(
-            create: (_) => DbService(userId: _user.userId).userData,
+            create: (_) => UserInfoService(userId: _user.userId).userData,
           ),
           StreamProvider<List<UserData>>(
-            create: (_) => DbService().playerData,
+            create: (_) => PlayersInfoService().playerData,
           ),
         ],
         child: Lobby(
-          dbService: DbService(userId: _user.userId),
+          initGameService: InitGameService(),
         ),
       );
     }

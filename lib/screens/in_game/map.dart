@@ -1,17 +1,21 @@
 import 'dart:collection';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:light0/models/item.dart';
 import 'package:light0/models/userLocation.dart';
-import 'package:light0/services/db.dart';
-import 'package:light0/services/items.dart';
+import 'package:light0/services/Db/game/playing_game/game_info.dart';
+import 'package:light0/services/Db/game/playing_game/items.dart';
 import 'package:light0/services/location.dart';
 import 'package:provider/provider.dart';
 
 class InGameMap extends StatefulWidget {
   final bool tagger;
-  InGameMap({@required this.tagger});
+  final GameInfo gameInfo;
+  final Items itemsService;
+  InGameMap(
+      {@required this.tagger,
+      @required this.gameInfo,
+      @required this.itemsService});
 
   @override
   _InGameMapState createState() => _InGameMapState();
@@ -44,7 +48,7 @@ class _InGameMapState extends State<InGameMap> {
   }
 
   void _updateBoundaryPosition() async {
-    await DbService().getBoundaryPosition.then((LatLng position) {
+    await widget.gameInfo.getBoundaryPosition.then((LatLng position) {
       print("got boundary position: ${position.latitude}");
       _circles.add(
         Circle(
@@ -78,7 +82,7 @@ class _InGameMapState extends State<InGameMap> {
   // }
 
   void _setItemMarkers(items) {
-    final _newItemMarkers = ItemsService().markersFromItems(items);
+    final _newItemMarkers = widget.itemsService.markersFromItems(items);
     print("putting items on map: $_newItemMarkers");
     setState(() {
       _itemMarkers = _newItemMarkers;

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:light0/services/Db/game/init_game.dart';
 import 'package:light0/services/auth.dart';
-import 'package:light0/services/db.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/screens/init_game/gameSettings.dart';
 import 'package:light0/shared/loading.dart';
 import 'package:provider/provider.dart';
 
 class Lobby extends StatefulWidget {
-  final Db dbService;
-  Lobby({this.dbService});
+  final InitGame initGameService;
+  Lobby({this.initGameService});
   @override
   _LobbyState createState() => _LobbyState();
 }
@@ -28,14 +28,16 @@ class _LobbyState extends State<Lobby> {
   }
 
   _setTagger() async {
-    dynamic setTaggerResult = await widget.dbService.setTagger(tagger);
+    dynamic setTaggerResult = await widget.initGameService.setTagger(tagger);
     setState(() {
       _waitingForSetTaggerResponse = false;
     });
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GameSettings(),
+        builder: (context) => GameSettings(
+          initGameService: InitGameService(),
+        ),
       ),
     );
   }
@@ -66,7 +68,7 @@ class _LobbyState extends State<Lobby> {
               label: Text("leave game"),
               icon: const Icon(Icons.exit_to_app),
               onPressed: () async {
-                await _auth.logout(_userData.userId);
+                await _auth.logout(_userData);
               },
             ),
           ],

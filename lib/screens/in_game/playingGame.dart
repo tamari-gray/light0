@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:light0/models/gameData.dart';
 import 'package:light0/models/item.dart';
@@ -9,8 +8,10 @@ import 'package:light0/models/userLocation.dart';
 import 'package:light0/screens/in_game/initCountdown.dart';
 import 'package:light0/screens/in_game/map.dart';
 import 'package:light0/screens/in_game/radarTimer.dart';
-import 'package:light0/services/db.dart';
-import 'package:light0/services/location.dart';
+import 'package:light0/services/Db/game/init_game.dart';
+import 'package:light0/services/Db/game/playing_game/game_info.dart';
+import 'package:light0/services/Db/game/playing_game/items.dart';
+import 'package:light0/services/Db/user/user-info.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
@@ -28,9 +29,9 @@ class _PlayingGameState extends State<PlayingGame> {
     return MultiProvider(
       providers: [
         StreamProvider<UserData>(
-            create: (_) => DbService(userId: _user.userId).userData),
-        StreamProvider<GameData>(create: (_) => DbService().gameData),
-        StreamProvider<List<Item>>(create: (_) => DbService().getItems),
+            create: (_) => UserInfoService(userId: _user.userId).userData),
+        StreamProvider<GameData>(create: (_) => GameService().gameData),
+        StreamProvider<List<Item>>(create: (_) => ItemsService().getItems),
       ],
       child: GameScreen(),
     );
@@ -67,6 +68,8 @@ class GameScreen extends StatelessWidget {
               Container(
                 height: 350,
                 child: InGameMap(
+                  gameInfo: GameService(),
+                  itemsService: ItemsService(),
                   tagger: _userData.isTagger,
                 ),
               ),
@@ -82,7 +85,9 @@ class GameScreen extends StatelessWidget {
 
   _gameInfo(String gameState, bool tagger) {
     if (gameState == "initialising") {
-      return InitCountdown();
+      return InitCountdown(
+        initGameService: InitGameService(),
+      );
     } else if (gameState == "playing") {
       return UserAbilities();
     } else if (gameState == "finished") {
@@ -92,6 +97,8 @@ class GameScreen extends StatelessWidget {
 }
 
 class UserAbilities extends StatefulWidget {
+  final ItemsService itemsService;
+  UserAbilities({this.itemsService});
   @override
   _UserAbilitiesState createState() => _UserAbilitiesState();
 }
@@ -176,7 +183,7 @@ class _UserAbilitiesState extends State<UserAbilities> {
             // geoquery => update item in db : "no items within 5 metres"
             final _currentLocation = await _getLocation();
             final bool _itemDetected =
-                await DbService().checkForItem(_currentLocation);
+                await widget.itemsService.checkForItem(_currentLocation);
 
             if (_itemDetected) {
               _startTimer();

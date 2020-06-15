@@ -1,77 +1,25 @@
 import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:light0/models/gameData.dart';
-import 'package:light0/models/item.dart';
 import 'package:light0/models/userData.dart';
-import 'package:light0/models/userLocation.dart';
 import 'package:light0/screens/init_game/lobby.dart';
-import 'package:light0/services/db.dart';
+import 'package:light0/services/Db/game/init_game.dart';
 import 'package:provider/provider.dart';
 
-class DbMock extends Db {
-  final String userId;
-  DbMock({this.userId});
-
+class InitGameMock extends InitGame {
   @override
-  Future updateUserData(String username) async {
-    return await null;
-  }
-
+  bool freshGame;
   @override
-  deleteAccount() async {}
-
+  setTagger(UserData tagger) {}
   @override
-  UserData userDataFromSnapshot(DocumentSnapshot snapshot) {
-    return UserData();
-  }
-
+  setBoundary(LatLng boundaryPosition, double boundaryRadius) {}
   @override
-  Stream<UserData> get userData {}
-
+  startGame() {}
   @override
-  List<UserData> playerDataFromSnapshot(QuerySnapshot snapshot) {}
-
+  initialiseGame(double remainingPlayers) {}
   @override
-  Stream<List<UserData>> get playerData {}
-
-  @override
-  makeAdmin() async {}
-
-  @override
-  initialiseGame(double remainingPlayers) async {}
-
-  @override
-  setTagger(UserData tagger) async {
-    return "success";
-  }
-
-  @override
-  setBoundary(LatLng boundaryPosition, double boundaryRadius) async {}
-
-  @override
-  Future<LatLng> get getBoundaryPosition {}
-
-  @override
-  startGame() async {}
-
-  @override
-  Stream<GameData> get gameData {}
-
-  @override
-  Future<bool> checkForItem(UserLocation location) async {}
-
-  @override
-  List<Item> itemFromSnapshot(QuerySnapshot snapshot) {}
-
-  @override
-  Stream<List<Item>> get getItems {}
-
-  @override
-  setItems(List<Item> items) async {}
+  deleteGame() {}
 }
 
 void main() {
@@ -108,7 +56,7 @@ void main() {
               create: (_) => _controller.stream,
             ),
           ],
-          child: Lobby(dbService: DbMock(userId: "tam")),
+          child: Lobby(initGameService: InitGameMock()),
         ),
       ));
 
@@ -137,5 +85,55 @@ void main() {
       var loadingWidget = find.byKey(Key("loading_indicator"));
       expect(loadingWidget, findsNWidgets(1));
     });
+  });
+
+  testWidgets('reset game if admin logout', (WidgetTester tester) async {
+    // set up widget
+    await tester.pumpWidget(makeTestableWidget(
+      child: MultiProvider(
+        providers: [
+          StreamProvider<UserData>(
+            create: (_) => Stream.fromIterable([
+              UserData(
+                  userId: "tams_is_cool_id",
+                  username: "tam_is_cool",
+                  isAdmin: true)
+            ]),
+          ),
+          StreamProvider<List<UserData>>(
+            create: (_) => _controller.stream,
+          ),
+        ],
+        child: Lobby(initGameService: InitGameMock()),
+      ),
+    ));
+
+    // set up data
+    List gotUsers = <UserData>[];
+    gotUsers.add(
+      UserData(username: "otherPlayer", userId: "mockPlayer"),
+    );
+    gotUsers.add(UserData(
+        userId: "tams_is_cool_id", username: "tam_is_cool", isAdmin: true));
+
+    _controller.add(gotUsers);
+    await tester.pump();
+
+    var logoutButton = find.byKey(Key("logout_button"));
+    await tester.tap(logoutButton);
+
+    // tap first player in list
+    await tester.tap(find.byType(ListTile).at(0));
+    await tester.pump();
+
+    // tap set boundary btn
+    var setBoundaryBtn = find.byKey(Key("go_to_game_settings"));
+    expect(setBoundaryBtn, findsNWidgets(1));
+    await tester.tap(setBoundaryBtn);
+    await tester.pump();
+
+    // check if can find loading indicator
+    var loadingWidget = find.byKey(Key("loading_indicator"));
+    expect(loadingWidget, findsNWidgets(1));
   });
 }

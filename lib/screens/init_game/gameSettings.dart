@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:light0/models/userData.dart';
 import 'package:light0/models/userLocation.dart';
-import 'package:light0/services/db.dart';
+import 'package:light0/services/Db/game/init_game.dart';
 import 'package:light0/screens/in_game/playingGame.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/services/location.dart';
@@ -15,8 +15,9 @@ class GameSettings extends StatefulWidget {
   _GameSettingsState createState() => _GameSettingsState();
 
   final double remainingPlayers;
+  final InitGame initGameService;
 
-  GameSettings({this.remainingPlayers});
+  GameSettings({this.remainingPlayers, @required this.initGameService});
 }
 
 class _GameSettingsState extends State<GameSettings> {
@@ -172,9 +173,9 @@ class _GameSettingsState extends State<GameSettings> {
                     child: RaisedButton(
                       child: Text("Start game"),
                       onPressed: () async {
-                        await DbService(userId: userId)
+                        await widget.initGameService
                             .initialiseGame(playerCount);
-                        await DbService(userId: userId)
+                        await widget.initGameService
                             .setBoundary(boundaryPosition, boundaryRadius);
                         Navigator.push(
                           context,
