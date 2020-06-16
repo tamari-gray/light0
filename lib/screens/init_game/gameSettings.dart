@@ -5,8 +5,10 @@ import 'package:light0/services/Db/game/init_game.dart';
 import 'package:light0/screens/in_game/playingGame.dart';
 import 'package:light0/models/user.dart';
 import 'package:light0/services/location.dart';
+import 'package:light0/shared/loading.dart';
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class GameSettings extends StatefulWidget {
   @override
@@ -27,34 +29,41 @@ class _GameSettingsState extends State<GameSettings> {
   double _boundaryRadius;
   LatLng _boundaryPosition;
   bool _hasMovedMarker;
+  String _mapStyle;
+
+  _getMapStyle() async {
+    await rootBundle.loadString('assets/map_style.json').then((string) {
+      print(string);
+      _mapStyle = string;
+    });
+  }
 
   @override
   void initState() {
+    _myLocation = null;
     _boundaryRadius = 100;
     _hasMovedMarker = false;
+    // _getMapStyle();
+
     _getLocation();
     super.initState();
   }
 
   _getLocation() async {
-    await LocationService().getLocation().then((value) {
-      setState(() {
-        _myLocation = value;
-      });
-      _setBoundaryPosition(LatLng(value.latitude, value.longitude));
+    UserLocation userLocation = await LocationService().getLocation();
+    setState(() {
+      _myLocation = userLocation;
     });
+    _setBoundaryPosition(LatLng(userLocation.latitude, userLocation.longitude));
+    await _mapController.animateCamera(CameraUpdate.newLatLngZoom(
+        LatLng(userLocation.latitude, userLocation.longitude), 16));
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    // _setMapStyle();
+    _mapController.setMapStyle(_mapStyle);
   }
 
-  // void _setMapStyle() async {
-  // String style = await DefaultAssetBundle.of(context)
-  //     .loadString("assets/map_style.json");
-  // _mapController.setMapStyle(style);
-  // }
   void _setBoundaryRadius(double radius) {
     Set<Circle> newBoundary = HashSet<Circle>();
     Set<Marker> newMarkers = HashSet<Marker>();
@@ -203,99 +212,106 @@ class _GameSettingsState extends State<GameSettings> {
   @override
   Widget build(BuildContext context) {
     final _user = Provider.of<User>(context);
-    if (_user != null)
+    print("got user: $_user");
+    if (_user is User) {
       return Scaffold(
         appBar: AppBar(
           title: Text("Game settings"),
           actions: <Widget>[],
         ),
-        body: Container(
-          child: Column(
-            children: <Widget>[
-              Container(
-                height: 350,
-                child: GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _myLocation != null
-                        ? LatLng(_myLocation.latitude, _myLocation.longitude)
-                        : LatLng(0, 0),
-                    zoom: 16,
-                  ),
-                  circles: _circles,
-                  markers: _markers,
-                  myLocationEnabled: true,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                child: Container(
-                  child: Text("Hold and drag marker to move boundary"),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                child: Container(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text("Set boundary size: "),
-                      Slider(
-                        min: 25,
-                        max: 250,
-                        value: _boundaryRadius,
-                        divisions: 45,
-                        label: "$_boundaryRadius m",
-                        onChanged: _hasMovedMarker
-                            ? (value) {
-                                if (value != _boundaryRadius) {
-                                  print(value);
-                                  setState(() {
-                                    _boundaryRadius = value;
-                                  });
-                                }
-                              }
-                            : null,
-                        onChangeEnd: (newRadius) {
-                          print("updating radius $newRadius");
-                          _setBoundaryRadius(newRadius);
-                          // Set<Circle> updatedRadiusCircles = HashSet<Circle>();
-                          // updatedRadiusCircles.add(
-                          //   Circle(
-                          //     circleId: CircleId("oosh"),
-                          //     center: _boundaryPosition,
-                          //     radius: newRadius,
-                          //     strokeWidth: 3,
-                          //     strokeColor: Color.fromRGBO(102, 51, 153, 1),
-                          //     fillColor: Color.fromRGBO(102, 51, 153, 0.3),
-                          //     zIndex: 1,
-                          //   ),
-                          // );
-                          // setState(() {
-                          //   _circles = updatedRadiusCircles;
-                          // });
-                        },
+        body: _myLocation == null
+            ? Loading()
+            : Container(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      height: 350,
+                      child: GoogleMap(
+                        onMapCreated: _onMapCreated,
+                        initialCameraPosition: CameraPosition(
+                          target: _myLocation != null
+                              ? LatLng(
+                                  _myLocation.latitude, _myLocation.longitude)
+                              : LatLng(0, 0),
+                          zoom: 16,
+                        ),
+                        circles: _circles,
+                        markers: _markers,
+                        myLocationEnabled: true,
                       ),
-                    ],
-                  ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Container(
+                        child: Text("Hold and drag marker to move boundary"),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text("Set boundary size: "),
+                            Slider(
+                              min: 25,
+                              max: 250,
+                              value: _boundaryRadius,
+                              divisions: 45,
+                              label: "$_boundaryRadius m",
+                              onChanged: _hasMovedMarker
+                                  ? (value) {
+                                      if (value != _boundaryRadius) {
+                                        print(value);
+                                        setState(() {
+                                          _boundaryRadius = value;
+                                        });
+                                      }
+                                    }
+                                  : null,
+                              onChangeEnd: (newRadius) {
+                                print("updating radius $newRadius");
+                                _setBoundaryRadius(newRadius);
+                                // Set<Circle> updatedRadiusCircles = HashSet<Circle>();
+                                // updatedRadiusCircles.add(
+                                //   Circle(
+                                //     circleId: CircleId("oosh"),
+                                //     center: _boundaryPosition,
+                                //     radius: newRadius,
+                                //     strokeWidth: 3,
+                                //     strokeColor: Color.fromRGBO(102, 51, 153, 1),
+                                //     fillColor: Color.fromRGBO(102, 51, 153, 0.3),
+                                //     zIndex: 1,
+                                //   ),
+                                // );
+                                // setState(() {
+                                //   _circles = updatedRadiusCircles;
+                                // });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                        child: RaisedButton(
+                          onPressed: () {
+                            _showMyDialog(_user.userId, _boundaryPosition,
+                                _boundaryRadius, widget.remainingPlayers);
+                          },
+                          child: Text("start game"),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
-              Container(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                  child: RaisedButton(
-                    onPressed: () {
-                      _showMyDialog(_user.userId, _boundaryPosition,
-                          _boundaryRadius, widget.remainingPlayers);
-                    },
-                    child: Text("start game"),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
       );
+    } else {
+      return Container();
+    }
   }
 }
