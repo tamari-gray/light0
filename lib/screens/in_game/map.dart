@@ -6,6 +6,7 @@ import 'package:light0/models/userLocation.dart';
 import 'package:light0/services/Db/game/playing_game/game_info.dart';
 import 'package:light0/services/Db/game/playing_game/items.dart';
 import 'package:light0/services/location.dart';
+import 'package:light0/shared/loading.dart';
 import 'package:provider/provider.dart';
 
 class InGameMap extends StatefulWidget {
@@ -34,17 +35,19 @@ class _InGameMapState extends State<InGameMap> {
   @override
   void initState() {
     _boundaryRadius = 50;
+    _myLocation = null;
     _getLocation();
     _updateBoundaryPosition();
     super.initState();
   }
 
-  void _getLocation() async {
-    await LocationService().getLocation().then((value) {
-      setState(() {
-        _myLocation = value;
-      });
+  _getLocation() async {
+    UserLocation userLocation = await LocationService().getLocation();
+    setState(() {
+      _myLocation = userLocation;
     });
+    await _mapController.animateCamera(CameraUpdate.newLatLngZoom(
+        LatLng(userLocation.latitude, userLocation.longitude), 16));
   }
 
   void _updateBoundaryPosition() async {
@@ -92,22 +95,24 @@ class _InGameMapState extends State<InGameMap> {
   @override
   Widget build(BuildContext context) {
     final _itemsList = Provider.of<List<Item>>(context);
-    if (_itemsList != null) _setItemMarkers(_itemsList);
-    return Stack(
-      children: <Widget>[
-        GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: _myLocation != null
-                ? LatLng(_myLocation.latitude, _myLocation.longitude)
-                : LatLng(0, 0),
-            zoom: 17,
+    if (_myLocation == null) {
+      return Container(child: Loading());
+    } else {
+      if (_itemsList != null) _setItemMarkers(_itemsList);
+      return Stack(
+        children: <Widget>[
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(_myLocation.latitude, _myLocation.longitude),
+              zoom: 17,
+            ),
+            circles: _circles,
+            markers: _itemMarkers,
+            myLocationEnabled: true,
           ),
-          circles: _circles,
-          markers: _itemMarkers,
-          myLocationEnabled: true,
-        ),
-      ],
-    );
+        ],
+      );
+    }
   }
 }
