@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:light0/models/userData.dart';
+import 'package:light0/services/Db/game/playing_game/game_info.dart';
 
 abstract class InitGame {
   bool freshGame;
@@ -9,11 +10,13 @@ abstract class InitGame {
   startGame();
   initialiseGame(double remainingPlayers);
   deleteGame();
+
+  DocumentReference gameRef;
 }
 
 class InitGameService extends InitGame {
-  final DocumentReference gameRef =
-      Firestore.instance.collection("games").document("game1");
+  @override
+  DocumentReference gameRef = GameService().gameRef;
 
   @override
   bool freshGame;

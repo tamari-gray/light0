@@ -46,8 +46,6 @@ class _InGameMapState extends State<InGameMap> {
     setState(() {
       _myLocation = userLocation;
     });
-    await _mapController.animateCamera(CameraUpdate.newLatLngZoom(
-        LatLng(userLocation.latitude, userLocation.longitude), 16));
   }
 
   void _updateBoundaryPosition() async {
@@ -73,8 +71,10 @@ class _InGameMapState extends State<InGameMap> {
     });
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
+    await _mapController.animateCamera(CameraUpdate.newLatLngZoom(
+        LatLng(_myLocation.latitude, _myLocation.longitude), 17));
     // _setMapStyle();
   }
 
@@ -84,21 +84,31 @@ class _InGameMapState extends State<InGameMap> {
   // _mapController.setMapStyle(style);
   // }
 
-  void _setItemMarkers(items) {
+  void _putItemsOnMap(items) {
+    print("what are items? : $items");
     final _newItemMarkers = widget.itemsService.markersFromItems(items);
-    print("putting items on map: $_newItemMarkers");
+    print("putting items on map: ${_newItemMarkers.length}");
+    setState(() {
+      _itemMarkers.removeWhere((e) => e is Marker);
+    });
+
+    print("removed previous markers: ${_itemMarkers.length}");
+
     setState(() {
       _itemMarkers = _newItemMarkers;
     });
+    print("and added new ones: ${_itemMarkers.length}");
   }
 
   @override
   Widget build(BuildContext context) {
     final _itemsList = Provider.of<List<Item>>(context);
+
+    if (_itemsList != null && _itemsList.length > 0) _putItemsOnMap(_itemsList);
+
     if (_myLocation == null) {
-      return Container(child: Loading());
+      return Loading();
     } else {
-      if (_itemsList != null) _setItemMarkers(_itemsList);
       return Stack(
         children: <Widget>[
           GoogleMap(

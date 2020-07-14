@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:light0/models/userData.dart';
+import 'package:light0/services/Db/game/playing_game/game_info.dart';
 
 abstract class UserInfo {
   final String userId;
@@ -9,11 +10,13 @@ abstract class UserInfo {
   UserData userDataFromSnapshot(DocumentSnapshot snapshot);
   Stream<UserData> get userData;
   makeAdmin();
+
+  DocumentReference gameRef;
 }
 
 class UserInfoService extends UserInfo {
-  final DocumentReference gameRef =
-      Firestore.instance.collection("games").document("game1");
+  @override
+  final DocumentReference gameRef = GameService().gameRef;
 
   @override
   final String userId;
@@ -22,7 +25,7 @@ class UserInfoService extends UserInfo {
 
   @override
   makeAdmin() async {
-    // print("des es de admin");
+    print("des es de admin");
     return await gameRef
         .collection("users")
         .document(userId)
@@ -47,7 +50,8 @@ class UserInfoService extends UserInfo {
         .collection("users")
         .document(userId)
         .snapshots()
-        .map(userDataFromSnapshot);
+        .map(userDataFromSnapshot)
+        .handleError((onError) => onError);
   }
 
   @override

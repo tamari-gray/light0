@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:light0/screens/auth/signUp.dart';
 import 'package:light0/screens/init_game/lobby.dart';
 import 'package:light0/services/Db/game/init_game.dart';
+import 'package:light0/services/Db/game/playing_game/game_info.dart';
 import 'package:light0/services/Db/game/playing_game/players.dart';
 import 'package:light0/services/Db/user/user-info.dart';
 import 'package:light0/services/auth.dart';

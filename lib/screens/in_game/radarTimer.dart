@@ -24,8 +24,10 @@ class RadarTimer extends StatelessWidget {
             //
           },
           builder: (BuildContext ctx, String remaining) {
-            if (remaining == "05:00" && _userData.isTagger)
+            if (remaining == "05:00" && _userData.isTagger) {
+              print("calling generate new items from radar timer");
               ItemsService().generateNewItems(_gameData);
+            }
 
             return _userData.isTagger
                 ? Text("$remaining until next radar")

@@ -55,13 +55,13 @@ class _GameSettingsState extends State<GameSettings> {
       _myLocation = userLocation;
     });
     _setBoundaryPosition(LatLng(userLocation.latitude, userLocation.longitude));
-    await _mapController.animateCamera(CameraUpdate.newLatLngZoom(
-        LatLng(userLocation.latitude, userLocation.longitude), 16));
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
-    _mapController.setMapStyle(_mapStyle);
+    await _mapController.animateCamera(CameraUpdate.newLatLngZoom(
+        LatLng(_myLocation.latitude, _myLocation.longitude), 16));
+    // _mapController.setMapStyle(_mapStyle);
   }
 
   void _setBoundaryRadius(double radius) {
@@ -229,10 +229,8 @@ class _GameSettingsState extends State<GameSettings> {
                       child: GoogleMap(
                         onMapCreated: _onMapCreated,
                         initialCameraPosition: CameraPosition(
-                          target: _myLocation != null
-                              ? LatLng(
-                                  _myLocation.latitude, _myLocation.longitude)
-                              : LatLng(0, 0),
+                          target: LatLng(
+                              _myLocation.latitude, _myLocation.longitude),
                           zoom: 16,
                         ),
                         circles: _circles,

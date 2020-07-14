@@ -43,7 +43,7 @@ class AuthService extends Auth {
       return userFromFirebaseUser(user);
     } catch (e) {
       String errorMsg = e.toString();
-      print("error signing in $errorMsg");
+      print("error signing in: $errorMsg");
       return null;
     }
   }
@@ -52,7 +52,8 @@ class AuthService extends Auth {
   Future logout(UserData user) async {
     print("logging out user:  ${user.isAdmin}, ${user.userId}");
     await auth.signOut();
-    if (user.isAdmin) {
+
+    if (user.isAdmin == true) {
       await UserInfoService(userId: user.userId).deleteAccount();
       return await InitGameService().deleteGame();
     } else if (!user.isAdmin) {

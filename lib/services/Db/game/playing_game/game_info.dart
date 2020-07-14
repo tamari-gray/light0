@@ -6,11 +6,15 @@ abstract class GameInfo {
   Stream<GameData> get gameData;
 
   Future<LatLng> get getBoundaryPosition;
+
+  final DocumentReference gameRef;
+  GameInfo({this.gameRef});
 }
 
 class GameService extends GameInfo {
+  @override
   final DocumentReference gameRef =
-      Firestore.instance.collection("games").document("game1");
+      Firestore.instance.collection("games").document("alpha");
 
   @override
   Stream<GameData> get gameData {

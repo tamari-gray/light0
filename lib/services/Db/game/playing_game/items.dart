@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:light0/models/gameData.dart';
 import 'package:light0/models/item.dart';
 import 'package:light0/models/userLocation.dart';
+import 'package:light0/services/Db/game/playing_game/game_info.dart';
 
 abstract class Items {
   void generateNewItems(GameData gameData);
@@ -21,8 +22,7 @@ abstract class Items {
 }
 
 class ItemsService extends Items {
-  final DocumentReference gameRef =
-      Firestore.instance.collection("games").document("game1");
+  final DocumentReference gameRef = GameService().gameRef;
 
   @override
   GeoPoint newItemPosition(GeoPoint boundaryCentre, double radius) {
@@ -52,42 +52,33 @@ class ItemsService extends Items {
 
   @override
   void generateNewItems(GameData gameData) async {
-    List<Item> _newItems;
-    double amountOfItems = gameData.remainingPlayers / 2;
+    List<Item> _newItems = <Item>[];
+    // double amountOfItems = gameData.remainingPlayers / 2;
+    int amountOfItems = 5;
+    print("amount of items: $amountOfItems");
 
     // make new item for items in itemcount
     for (var i = 0; i < amountOfItems; i++) {
-      while (_newItems.length < amountOfItems) {
-        GeoPoint _position =
-            newItemPosition(gameData.boundaryPosition, gameData.boundaryRadius);
-
-        // geoquery check
-        // Future<bool> hi = GeoqueryService.checkIfSufficientlySpaced(
-        //     _position, _boundaryRadius.toInt());
-        bool _itemSufficientlySpaced = true;
-
-        if (_itemSufficientlySpaced) {
-          _newItems.add(
-            Item(
-                isPickedUp: false,
-                position: _position,
-                id: "${_position.latitude}_${_position.latitude}"),
-          );
-        }
-      }
-
-      if (_newItems.length == amountOfItems) {
-        print("generated new items: ${_newItems.length}");
-        await setItems(_newItems);
-        return;
-        // return _newItems;
-      }
+      GeoPoint _position =
+          newItemPosition(gameData.boundaryPosition, gameData.boundaryRadius);
+      _newItems.add(
+        Item(
+            isPickedUp: false,
+            position: _position,
+            id: "${_position.latitude}_${_position.latitude}"),
+      );
     }
+
+    print("generated new items: ${_newItems.length}");
+    return await setItems(_newItems);
   }
 
   @override
   Set<Marker> markersFromItems(List<Item> items) {
     Set<Marker> _newItems = HashSet<Marker>();
+
+    print(
+        "creating markers from items: ${items.length} ${items.first.position.latitude}");
 
     items.forEach((item) {
       _newItems.add(
@@ -112,7 +103,7 @@ class ItemsService extends Items {
 
   @override
   List<Item> itemFromSnapshot(QuerySnapshot snapshot) {
-    print("getting ${snapshot.documents.length} items");
+    print("getting ${snapshot.documents.length} items from db");
 
     return snapshot.documents.map((doc) {
       // print(doc.data["username"]);
@@ -134,6 +125,13 @@ class ItemsService extends Items {
 
   @override
   setItems(List<Item> items) async {
+    await gameRef.collection("items").getDocuments().then((snapshot) {
+      for (DocumentSnapshot doc in snapshot.documents) {
+        doc.reference.delete();
+      }
+    });
+
+    print("setting ${items.length} items in db");
     items.forEach((item) async {
       await gameRef.collection("items").document(item.id).setData({
         "isPickedUp": item.isPickedUp,

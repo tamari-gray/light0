@@ -74,7 +74,10 @@ class _LoginAnonState extends State<LoginAnon> {
                             });
                             dynamic result =
                                 await widget.auth.signInAnon(userName);
-                            if (result == null) {
+
+                            // bugR
+                            if (result == null &&
+                                _awaitingAuthResult == false) {
                               setState(() {
                                 _awaitingAuthResult = false;
                               });
